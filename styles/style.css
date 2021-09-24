@@ -1,0 +1,100 @@
+body {
+  font-family: 'Lato';
+  background: transparent url(../images/bg.jpg) no-repeat center center fixed;
+}
+
+.general-infos {
+  display: flex;
+}
+
+.annee-scolaire::before {
+  content: "Année Scolaire";
+}
+
+.enseignant::before {
+  content: "Enseignant"
+}
+
+section {
+	margin: 1rem 0;
+	padding: 1rem;
+	border: #666 solid thin;
+	border-radius: 0.5rem;
+}
+
+.date::before {
+  content: "Date";
+}
+
+.heure::before {
+  content: "Heure";
+}
+
+.groupe::before {
+  content: "Nom du groupe";
+}
+
+.remarque::before {
+  content: "Remarques";
+}
+
+.travail::before {
+  content: "Contenu de la séance";
+}
+
+.annee-scolaire::before, .enseignant::before, .date::before, .heure::before, .groupe::before, .remarque::before, .travail::before {
+	display: block;
+	font-size: 0.9rem;
+	font-weight: bold;
+	color: crimson;
+	line-height: 32px;
+}
+
+.enseignant::before {
+	background: transparent url(../images/teacher.png) no-repeat;
+	padding-left: 38px;
+}
+
+.groupe::before {
+	background: transparent url(../images/student.png) no-repeat;
+	padding-left: 38px;
+}
+
+.date::before {
+	background: transparent url(../images/calendar.png) no-repeat;
+	padding-left: 38px;
+}
+
+.heure::before {
+	background: transparent url(../images/watch.png) no-repeat;
+	padding-left: 38px;
+}
+
+.remarque, .travail {
+  margin: 1rem 0;
+}
+
+h1 {
+	margin: 2rem 0 2rem;
+	color: firebrick;
+	font-style: italic;
+	font-weight: bold;
+	font-size: 3.5rem;
+	background: transparent url(../images/classroom.png) no-repeat left center scroll;
+	height: 128px;
+	background-size: contain;
+	padding-left: 100px;
+}
+
+h1::before {
+	content: "Cahier de textes";
+	font-size: 1.5rem;
+	display: block;
+	padding-top: 24px;
+}
+
+h2 {
+  margin: 0 0 2rem;
+  text-align: center;
+  color: #857;
+}
