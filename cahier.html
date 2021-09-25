@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cahier de textes</title>
+  <link rel="stylesheet" href="styles/bootstrap.min.css">
+  <link rel="stylesheet" href="styles/fonts.css">
+  <link rel="stylesheet" href="styles/style.css">
+</head>
+
+<body>
+  <main class="container" id="app">
+
+    <article>
+      <form action="">
+        <div class="row">
+          <div class="col-sm-4">
+            <label for="classe">Classe</label>
+            <select name="classe" id="classe" class="form-control" v-model="classe" v-on:change="onClasseChanged()">
+              <option v-for="classe in classes">{{classe}}</option>
+            </select>
+          </div>
+
+          <div class="col-sm-4" v-if="debut != ''">
+            <label for="debut">Début</label>
+            <select name="debut" id="debut" class="form-control" v-model="debut" v-on:change="onIntervalChanged('debut')">
+              <option v-for="date in dates" v-bind:value="date">{{formatDate(date)}}</option>
+            </select>
+          </div>
+
+          <div class="col-sm-4" v-if="fin != ''">
+            <label for="fin">Fin</label>
+            <select name="fin" id="fin" class="form-control" v-model="fin" v-on:change="onIntervalChanged('fin')">
+              <option v-for="date in dates" v-bind:value="date">{{formatDate(date)}}</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </article>
+
+    <article v-if="classe != ''">
+      <h1>Classe {{classe}}</h1>
+      <div class="row">
+        <div class="col-sm-6 annee-scolaire">{{annee_scolaire}}</div>
+        <div class="col-sm-6 enseignant">{{enseignant}}</div>
+      </div>
+
+      <div class="my-3" v-if="alerts.length > 0">
+        <div v-for="alert in alerts" class="alert" v-bind:class="'alert-'+alert.alType" role="alert">
+          {{alert.alMsg}}
+        </div>
+      </div>
+
+      <section v-for="seance, idx in filteredSeances">
+        <h2>{{seance.titre}}</h2>
+        <div class="row">
+          <div class="col-sm-3 date">{{formatDate(seance.date)}}</div>
+          <div class="col-sm-3 heure">{{seance.debut}} &rarr; {{seance.fin}}</div>
+          <div class="col-sm-6 groupe">{{seance.groupe}}</div>
+        </div>
+        <div class="remarque" v-if="seance.remarque">{{seance.remarque}}</div>
+        <div class="travail" v-html="seance.travail"></div>
+      </section>
+    </article>
+  </main>
+  <script src="scripts/jquery.min.js"></script>
+  <script src="scripts/bootstrap.min.js"></script>
+  <script src="scripts/vue.min.js"></script>
+  <script src="scripts/entities.js"></script>
+  <script src="scripts/app2.js"></script>
+</body>
+
+</html>

@@ -64,6 +64,12 @@
             placeholder="Travail réalisé pendant la séance" v-model="seance.travail" required></textarea>
         </div>
 
+        <div class="my-2">
+          <label for="travail-seance">Remarques</label>
+          <textarea name="travail" id="travail-seance" cols="30" rows="2" class="form-control"
+            placeholder="Indiquer vos remarques" v-model="seance.remarque"></textarea>
+        </div>
+
         <div>
           <button class="btn btn-primary" v-on:click.prevent="onInsertClicked()">Ajouter</button>
         </div>
@@ -73,6 +79,7 @@
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/bootstrap.min.js"></script>
   <script src="scripts/vue.min.js"></script>
+  <script src="scripts/entities.js"></script>
   <script src="scripts/app.js"></script>
 </body>
 
