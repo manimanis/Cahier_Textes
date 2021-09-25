@@ -171,11 +171,11 @@
           <button class="btn btn-primary" v-on:click.prevent="onEditSeanceClicked(idx)">Modifier</button>
           <button class="btn btn-danger" v-on:click.prevent="onConfirmDeleteSeanceClicked(idx)">Supprimer</button>
         </div>
-      </section>
 
-      <div class="my-3" v-if="selectedSeance == -1 && mode == 'list'">
-        <button class="btn btn-primary" v-on:click.prevent="onNewSeanceclicked()">Nouvelle séance</button>
-      </div>
+        <div class="my-2" v-if="selectedSeance == -1 && mode == 'list'">
+          <button class="btn btn-primary" v-on:click.prevent="onNewSeanceclicked()">Nouvelle séance</button>
+        </div>
+      </section>
 
       <section v-if="mode == 'new'">
         <div class="my-3" v-if="alerts.length > 0">
