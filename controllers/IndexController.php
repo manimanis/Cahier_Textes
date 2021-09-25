@@ -19,7 +19,14 @@ class IndexController extends ControllerBase
         $this->_response->write();
     }
 
-    public function listAction() {
+    public function pingAction()
+    {
+        $this->addData('ping', 'ok');
+        $this->write();
+    }
+
+    public function listAction()
+    {
         $req = $this->getRequest();
         if (!key_exists("classe", $req)) {
             $this->addError("You must specify the classe field!");
@@ -51,6 +58,7 @@ class IndexController extends ControllerBase
         }
         $seance = new Seances($req['classe']);
         $data = [
+            'classe' => $req['classe'],
             'date' => $req['date'],
             'debut' => $req['debut'],
             'fin' => $req['fin'],
@@ -71,4 +79,85 @@ class IndexController extends ControllerBase
         $this->addData("data", $data);
         $this->write();
     }
+
+    public function deleteAction() {
+        if (!$this->isPOST()) {
+            $this->addError("Only POST method is supported!");
+            $this->write();
+            die();
+        }
+
+        $req = $this->getRequest();
+        if (!in_array($req['classe'], CLASSES)) {
+            $this->addError("The classe field is not valid!");
+            $this->write();
+            die();
+        }
+        $seance = new Seances($req['classe']);
+        $data = [
+            'classe' => $req['classe'],
+            'date' => $req['date'],
+            'debut' => $req['debut'],
+            'fin' => $req['fin'],
+            'groupe' => $req['groupe'],
+            'titre' => $req['titre'],
+            'travail' => $req['travail'],
+            'remarque' => $req['remarque']
+        ];
+        $idx = $seance->find($data);
+        if ($idx == -1) {
+            $this->addError("This class seance was not found!");
+            $this->write();
+            die();
+        }
+        $seance->delete($idx);
+        $seance->save();
+        $this->write();
+    }
+
+    public function updateAction() {
+        if (!$this->isPOST()) {
+            $this->addError("Only POST method is supported!");
+            $this->write();
+            die();
+        }
+
+        $req = $this->getRequest();
+        if (!in_array($req['classe'], CLASSES)) {
+            $this->addError("The classe field is not valid!");
+            $this->write();
+            die();
+        }
+        $seance = new Seances($req['classe']);
+        $data = [
+            'classe' => $req['classe'],
+            'date' => $req['date'],
+            'debut' => $req['debut'],
+            'fin' => $req['fin'],
+            'groupe' => $req['groupe'],
+            'titre' => $req['titre'],
+            'travail' => $req['travail'],
+            'remarque' => $req['remarque']
+        ];
+        $ndata = [
+            'classe' => $req['nclasse'],
+            'date' => $req['ndate'],
+            'debut' => $req['ndebut'],
+            'fin' => $req['nfin'],
+            'groupe' => $req['ngroupe'],
+            'titre' => $req['ntitre'],
+            'travail' => $req['ntravail'],
+            'remarque' => $req['nremarque']
+        ];
+        $idx = $seance->find($data);
+        if ($idx == -1) {
+            $this->addError("This class seance was not found!");
+            $this->write();
+            die();
+        }
+        $seance->update($idx, $ndata);
+        $seance->save();
+        $this->write();
+    }
+
 }

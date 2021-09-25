@@ -24,14 +24,15 @@
           </div>
 
           <div class="col-sm-4" v-if="debut != ''">
-            <label for="debut">Début</label>
-            <select name="debut" id="debut" class="form-control" v-model="debut" v-on:change="onIntervalChanged('debut')">
+            <label for="debut">Date de début</label>
+            <select name="debut" id="debut" class="form-control" v-model="debut"
+              v-on:change="onIntervalChanged('debut')">
               <option v-for="date in dates" v-bind:value="date">{{formatDate(date)}}</option>
             </select>
           </div>
 
           <div class="col-sm-4" v-if="fin != ''">
-            <label for="fin">Fin</label>
+            <label for="fin">Date de fin</label>
             <select name="fin" id="fin" class="form-control" v-model="fin" v-on:change="onIntervalChanged('fin')">
               <option v-for="date in dates" v-bind:value="date">{{formatDate(date)}}</option>
             </select>
@@ -53,7 +54,15 @@
         </div>
       </div>
 
-      <section v-for="seance, idx in filteredSeances">
+      <div class="my-3 alert alert-secondary" v-if="filteredSeances.length != seances.length">
+        {{filteredSeances.length}} séances parmi {{seances.length}}
+      </div>
+      <div class="my-3 alert alert-secondary" v-else>
+        {{seances.length}} séances
+      </div>
+
+
+      <section v-if="!connected" v-for="seance, idx in filteredSeances">
         <h2>{{seance.titre}}</h2>
         <div class="row">
           <div class="col-sm-3 date">{{formatDate(seance.date)}}</div>
@@ -62,6 +71,180 @@
         </div>
         <div class="remarque" v-if="seance.remarque">{{seance.remarque}}</div>
         <div class="travail" v-html="seance.travail"></div>
+      </section>
+
+      <section v-if="connected" v-for="seance, idx in filteredSeances">
+        <div v-if="selectedSeance != idx">
+          <h2>{{seance.titre}}</h2>
+          <div class="row">
+            <div class="col-sm-3 date">{{formatDate(seance.date)}}</div>
+            <div class="col-sm-3 heure">{{seance.debut}} &rarr; {{seance.fin}}</div>
+            <div class="col-sm-6 groupe">{{seance.groupe}}</div>
+          </div>
+          <div class="remarque" v-if="seance.remarque">{{seance.remarque}}</div>
+          <div class="travail" v-html="seance.travail"></div>
+        </div>
+
+        <div v-if="selectedSeance == idx && mode == 'edit'">
+          <form id="form-seance" method="post">
+            <div class="my-2 row">
+              <div class="col-sm-4">
+                <label for="date-seance">Date de la séance</label>
+                <input type="date" name="date_seance" id="date-seance" class="form-control" v-model="seance.date"
+                  required>
+              </div>
+
+              <div class="col-sm-4">
+                <label for="date-seance">Heure départ</label>
+                <input type="text" name="date_seance" id="date-seance" class="form-control" min="08:00" max="17:00"
+                  step="1800" v-model="seance.debut" required>
+              </div>
+
+              <div class="col-sm-4">
+                <label for="date-seance">Heure fin</label>
+                <input type="text" name="date_seance" id="date-seance" class="form-control" min="08:30" max="18:00"
+                  step="1800" v-model="seance.fin" required>
+              </div>
+            </div>
+
+            <div class="my-2 row">
+              <div class="col-sm-6">
+                <label for="classe-seance">Classe</label>
+                <input type="text" name="classe" id="classe-seance" class="form-control" placeholder="Classe"
+                  list="liste-classes" v-model="seance.classe" readonly>
+                <datalist id="liste-classes">
+                  <option v-for="classe in classes">{{classe}}</option>
+                </datalist>
+              </div>
+              <div class="col-sm-6">
+                <label for="groupe-seance">Groupe d'élèves</label>
+                <select id="groupe-seance" name="groupe" class="form-control" v-model="seance.groupe" required>
+                  <option v-for="groupe in groupes">{{groupe}}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="my-2">
+              <label for="titre-seance">Titre séance</label>
+              <input id="titre-seance" name="titre" type="text" class="form-control" placeholder="Titre de la séance"
+                v-model="seance.titre" required>
+            </div>
+
+            <div class="my-2">
+              <label for="travail-seance">Travail réalisé</label>
+              <textarea name="travail" id="travail-seance" cols="30" rows="5" class="form-control"
+                placeholder="Travail réalisé pendant la séance" v-model="seance.travail" required></textarea>
+            </div>
+
+            <div class="my-2">
+              <label for="travail-seance">Remarques</label>
+              <textarea name="travail" id="travail-seance" cols="30" rows="2" class="form-control"
+                placeholder="Indiquer vos remarques" v-model="seance.remarque"></textarea>
+            </div>
+
+            <div class="my-2" v-if="mode == 'edit'">
+              <button class="btn btn-success" v-on:click.prevent="onModifySeanceClicked()">Modifier</button>
+              <button class="btn btn-secondary" v-on:click.prevent="onCancelClicked()">Annuler</button>
+            </div>
+          </form>
+        </div>
+
+        <div v-if="selectedSeance == idx && mode == 'delete'">
+          <h2>{{seance.titre}}</h2>
+          <div class="row">
+            <div class="col-sm-3 date">{{formatDate(seance.date)}}</div>
+            <div class="col-sm-3 heure">{{seance.debut}} &rarr; {{seance.fin}}</div>
+            <div class="col-sm-6 groupe">{{seance.groupe}}</div>
+          </div>
+          <div class="remarque" v-if="seance.remarque">{{seance.remarque}}</div>
+          <div class="travail" v-html="seance.travail"></div>
+
+          <div class="my-2 alert alert-danger">
+            Voulez-vous vraiment supprimer cette séance ?
+          </div>
+
+          <button class="btn btn-secondary" v-on:click.prevent="onCancelClicked()">Annuler</button>
+          <button class="btn btn-danger" v-on:click.prevent="onDeleteSeanceClicked()">Supprimer</button>
+        </div>
+
+        <div class="my-2" v-if="mode == 'list'">
+          <button class="btn btn-primary" v-on:click.prevent="onEditSeanceClicked(idx)">Modifier</button>
+          <button class="btn btn-danger" v-on:click.prevent="onConfirmDeleteSeanceClicked(idx)">Supprimer</button>
+        </div>
+      </section>
+
+      <div class="my-3" v-if="selectedSeance == -1 && mode == 'list'">
+        <button class="btn btn-primary" v-on:click.prevent="onNewSeanceclicked()">Nouvelle séance</button>
+      </div>
+
+      <section v-if="mode == 'new'">
+        <div class="my-3" v-if="alerts.length > 0">
+          <div v-for="alert in alerts" class="alert" v-bind:class="'alert-'+alert.alType" role="alert">
+            {{alert.alMsg}}
+          </div>
+        </div>
+
+        <form id="form-seance" method="post">
+          <div class="my-2 row">
+            <div class="col-sm-4">
+              <label for="date-seance">Date de la séance</label>
+              <input type="date" name="date_seance" id="date-seance" class="form-control" v-model="seance.date"
+                v-on:change="onDateChanged()" required>
+            </div>
+
+            <div class="col-sm-4">
+              <label for="date-seance">Heure départ</label>
+              <input type="text" name="date_seance" id="date-seance" class="form-control" min="08:00" max="17:00"
+                step="1800" v-model="seance.debut" required>
+            </div>
+
+            <div class="col-sm-4">
+              <label for="date-seance">Heure fin</label>
+              <input type="text" name="date_seance" id="date-seance" class="form-control" min="08:30" max="18:00"
+                step="1800" v-model="seance.fin" required>
+            </div>
+          </div>
+
+          <div class="my-2 row">
+            <div class="col-sm-6">
+              <label for="classe-seance">Classe</label>
+              <input type="text" name="classe" id="classe-seance" class="form-control" placeholder="Classe"
+                list="liste-classes" v-model="seance.classe" required>
+              <datalist id="liste-classes">
+                <option v-for="classe in classes">{{classe}}</option>
+              </datalist>
+            </div>
+            <div class="col-sm-6">
+              <label for="groupe-seance">Groupe d'élèves</label>
+              <select id="groupe-seance" name="groupe" class="form-control" v-model="seance.groupe" required>
+                <option v-for="groupe in groupes">{{groupe}}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="my-2">
+            <label for="titre-seance">Titre séance</label>
+            <input id="titre-seance" name="titre" type="text" class="form-control" placeholder="Titre de la séance"
+              v-model="seance.titre" required>
+          </div>
+
+          <div class="my-2">
+            <label for="travail-seance">Travail réalisé</label>
+            <textarea name="travail" id="travail-seance" cols="30" rows="10" class="form-control"
+              placeholder="Travail réalisé pendant la séance" v-model="seance.travail" required></textarea>
+          </div>
+
+          <div class="my-2">
+            <label for="travail-seance">Remarques</label>
+            <textarea name="travail" id="travail-seance" cols="30" rows="2" class="form-control"
+              placeholder="Indiquer vos remarques" v-model="seance.remarque"></textarea>
+          </div>
+
+          <div>
+            <button class="btn btn-primary" v-on:click.prevent="onInsertClicked()">Ajouter</button>
+            <button class="btn btn-secondary" v-on:click.prevent="onCancelClicked()">Annuler</button>
+          </div>
+        </form>
       </section>
     </article>
   </main>

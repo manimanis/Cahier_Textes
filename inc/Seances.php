@@ -65,7 +65,7 @@ class Seances
     }
 
     public function delete($idx) {
-        array_splice($this->_data[$idx], $idx, 1);
+        array_splice($this->_data, $idx, 1);
     }
 
     public function getData() {
