@@ -173,7 +173,7 @@
         </div>
       </section>
 
-      <div class="my-2" v-if="selectedSeance == -1 && mode == 'list'">
+      <div class="my-2" v-if="connected && selectedSeance == -1 && mode == 'list'">
         <button class="btn btn-primary" v-on:click.prevent="onNewSeanceclicked()">Nouvelle séance</button>
       </div>
 
