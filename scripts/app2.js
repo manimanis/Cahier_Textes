@@ -22,6 +22,7 @@ const app = new Vue({
     seance: null
   },
   mounted: function () {
+    this.connected = false;
     this.isConnected()
       .then(connected => {
         this.connected = true;
