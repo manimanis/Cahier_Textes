@@ -11,20 +11,45 @@
 </head>
 
 <body>
-  <main class="container">
-    <h1>2k21</h1>
-    <div class="index-page row">
-      <div class="col-md-6 my-3">
-        <a href="4eco.html" class="btn btn-success w-100 p-5">
-          4<sup>ème</sup> Economie/Gestion</a></div>
-      <div class="col-md-6 my-3">
-        <a href="3t.html" class="btn btn-success w-100 p-5">
-          4<sup>ème</sup> Techniques</a></div>
-      <div class="col-md-6 my-3">
-        <a href="2ti.html" class="btn btn-success w-100 p-5">
-          2<sup>ème</sup> Technologies de l'informatique</a></div>
-    </div>
+  <main class="container" id="app">
+    <article v-if="selectedClasse == ''">
+      <h1>2k21</h1>
+      <div class="index-page row">
+        <div v-for="classe in classes" class="col-md-6 my-3">
+          <a class="btn btn-success w-100 p-5" v-on:click.prevent="onClasseChanged(classe.shortName)"
+            v-html="classe.longName"></a>
+        </div>
+      </div>
+    </article>
+
+    <article v-if="selectedClasse != ''">
+      <h1>Classe {{selectedClasse}}</h1>
+      <div class="row">
+        <div class="col-sm-6 annee-scolaire">{{annee_scolaire}}</div>
+        <div class="col-sm-6 enseignant">{{enseignant}}</div>
+      </div>
+
+      <a href="#" v-on:click.prevent="onClasseChanged('')">&larr; Liste des classes</a>
+
+      <section v-for="seance, idx in seances[selectedClasse]">
+        <h2>{{seance.titre}}</h2>
+        <div class="row">
+          <div class="col-sm-3 date">{{formatDate(seance.date)}}</div>
+          <div class="col-sm-3 heure">{{seance.debut}} &rarr; {{seance.fin}}</div>
+          <div class="col-sm-6 groupe">{{seance.groupe}}</div>
+        </div>
+        <div class="remarque" v-if="seance.remarque" v-html="seance.remarque"></div>
+        <div class="travail" v-html="seance.travail"></div>
+      </section>
+    </article>
+
+
   </main>
+  <script src="scripts/jquery.min.js"></script>
+  <script src="scripts/bootstrap.min.js"></script>
+  <script src="scripts/vue.min.js"></script>
+  <script src="scripts/entities.js"></script>
+  <script src="scripts/app3.js"></script>
 </body>
 
 </html>

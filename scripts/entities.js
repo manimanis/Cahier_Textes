@@ -4,6 +4,21 @@ const enseignant = "Mohamed Anis MANI";
 
 const classes = ["2TI", "4ECO", "4T"];
 
+const classesObjects = [
+  {
+    shortName : '2TI',
+    longName: "2<sup>ème</sup> Tech. de l'informatique"
+  },
+  {
+    shortName : '4ECO',
+    longName: "4<sup>ème</sup> Economie Gestion"
+  },
+  {
+    shortName : '4T',
+    longName: "4<sup>ème</sup> Techniques"
+  }
+];
+
 const groupes = ["Toute la classe", "Groupe 1", "Groupe 2"];
 
 const emploi = [
