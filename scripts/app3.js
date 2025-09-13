@@ -1,3 +1,9 @@
+function compareTime(t1, t2) {
+  if (t1 > t2) return 1;
+  if (t1 < t2) return -1;
+  return 0;
+}
+
 const app = new Vue({
   el: '#app',
   data: {
@@ -5,12 +11,14 @@ const app = new Vue({
     classes: classesObjects,
     groupes: groupes,
     // 0: dim, 1: lun, 2: mar, 3: mer, 4: jeu, 5: ven, 6: sam
+    jours: ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"],
     emploi: emploi,
     alerts: [],
     annee_scolaire: annee_scolaire,
     enseignant: enseignant,
     seances: {},
-    selectedClasse: ""
+    selectedClasse: "",
+    emploi_tab: []
   },
   mounted: function () {
   },

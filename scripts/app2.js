@@ -19,7 +19,8 @@ const app = new Vue({
     selectedSeance: -1,
     mode: "list",
     originalSeance: null,
-    seance: null
+    seance: null,
+    emploi_tab: []
   },
   mounted: function () {
     this.connected = false;

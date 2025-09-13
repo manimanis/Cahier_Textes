@@ -98,3 +98,19 @@ h2 {
   text-align: center;
   color: #857;
 }
+
+
+.emploi {
+	width: 100%;
+}
+
+.emploi .entete  {
+	display: flex;
+}
+
+.emploi th, .emploi td {
+	width: 9.1%;
+	border: #333 solid 1px;
+	text-align: center;
+	font-weight: bold;
+}

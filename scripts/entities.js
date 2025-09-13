@@ -7,19 +7,19 @@ const classes = ["2TI1", "2SC1", "3T1", "4T1"];
 const classesObjects = [
   {
     shortName : '2TI1',
-    longName: "2<sup>ème</sup> Tech. de l'informatique"
+    longName: "2<sup>e</sup> Tech. de l'informatique"
   },
   {
     shortName : '2SC1',
-    longName: "4<sup>ème</sup> Sciences"
+    longName: "2<sup>e</sup> Sciences"
   },
   {
     shortName : '3T1',
-    longName: "3<sup>ème</sup> Techniques"
+    longName: "3<sup>e</sup> Techniques"
   },
   {
     shortName : '4T1',
-    longName: "4<sup>ème</sup> Techniques"
+    longName: "4<sup>e</sup> Techniques"
   }
 ];
 
@@ -27,9 +27,9 @@ const groupes = ["Toute la classe", "Groupe 1", "Groupe 2"];
 
 const emploi = [
   {
-    day: 1,
-    startTime: "11:00",
-    endTime: "13:00",
+    day: 4,
+    startTime: "10:00",
+    endTime: "12:00",
     classe: "2SC1",
     groupe: groupes[0]
   },
@@ -55,7 +55,7 @@ const emploi = [
     groupe: groupes[0]
   },
   {
-    day: 4,
+    day: 2,
     startTime: "10:00",
     endTime: "12:00",
     classe: "2TI1",
