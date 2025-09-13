@@ -1,6 +1,6 @@
 body {
-  font-family: 'Lato';
-  background: transparent url(../images/bg.jpg) no-repeat center center fixed;
+	font-family: 'Lato';
+	background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255,255,255,0.95)), transparent url(../images/bg.png) no-repeat center center fixed;
 }
 
 .general-infos {

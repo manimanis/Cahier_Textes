@@ -1,24 +1,20 @@
-const annee_scolaire = "2025/2026";
+const annee_scolaire = "2021/2022";
 
 const enseignant = "Mohamed Anis MANI";
 
-const classes = ["2TI1", "2SC1", "3T1", "4T1"];
+const classes = ["2TI", "4ECO", "4T"];
 
 const classesObjects = [
   {
-    shortName : '2TI1',
+    shortName : '2TI',
     longName: "2<sup>ème</sup> Tech. de l'informatique"
   },
   {
-    shortName : '2SC1',
-    longName: "4<sup>ème</sup> Sciences"
+    shortName : '4ECO',
+    longName: "4<sup>ème</sup> Economie Gestion"
   },
   {
-    shortName : '3T1',
-    longName: "3<sup>ème</sup> Techniques"
-  },
-  {
-    shortName : '4T1',
+    shortName : '4T',
     longName: "4<sup>ème</sup> Techniques"
   }
 ];
@@ -28,46 +24,39 @@ const groupes = ["Toute la classe", "Groupe 1", "Groupe 2"];
 const emploi = [
   {
     day: 1,
-    startTime: "11:00",
-    endTime: "13:00",
-    classe: "2SC1",
-    groupe: groupes[0]
-  },
-  {
-    day: 1,
-    startTime: "14:00",
-    endTime: "17:00",
-    classe: "4T1",
+    startTime: "08:00",
+    endTime: "12:00",
+    classe: "2TI",
     groupe: groupes[0]
   },
   {
     day: 2,
     startTime: "14:00",
     endTime: "17:00",
-    classe: "3T1",
+    classe: "4ECO",
     groupe: groupes[0]
   },
   {
     day: 3,
     startTime: "08:00",
     endTime: "12:00",
-    classe: "2TI1",
+    classe: "2TI",
     groupe: groupes[0]
   },
   {
     day: 4,
-    startTime: "10:00",
-    endTime: "12:00",
-    classe: "2TI1",
+    startTime: "14:00",
+    endTime: "18:00",
+    classe: "2TI",
     groupe: groupes[0]
   },
   {
-    day: 6,
-    startTime: "08:00",
+    day: 5,
+    startTime: "09:00",
     endTime: "12:00",
-    classe: "2TI1",
+    classe: "4T",
     groupe: groupes[0]
-  }
+  },
 ];
 
 class Seance {
