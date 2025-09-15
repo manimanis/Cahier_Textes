@@ -1,6 +1,6 @@
 <?php
 define("JSON_FOLDER", dirname(__FILE__)."/json");
-define("CLASSES", ["2TI", "4ECO", "4T"]);
+define("CLASSES", ["2TI1", "4T1", "3T1", "2SC1"]);
 
 require_once 'inc/ErrorCollection.php';
 

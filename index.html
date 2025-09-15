@@ -52,11 +52,13 @@
         <div class="col-sm-6 annee-scolaire">{{annee_scolaire}}</div>
         <div class="col-sm-6 enseignant">{{enseignant}}</div>
       </div>
-
-      <a href="#" v-on:click.prevent="onClasseChanged('')">&larr; Liste des classes</a>
+      
+      <div class="my-2 d-print-none">
+        <a href="#" v-on:click.prevent="onClasseChanged('')">&larr; Liste des classes</a>
+      </div>
 
       <section v-for="seance, idx in seances[selectedClasse]">
-        <h2>{{seance.titre}}</h2>
+        <h2><small>Séance {{idx+1}} : </small>{{seance.titre}}</h2>
         <div class="row">
           <div class="col-sm-3 date">{{formatDate(seance.date)}}</div>
           <div class="col-sm-3 heure">{{seance.debut}} &rarr; {{seance.fin}}</div>

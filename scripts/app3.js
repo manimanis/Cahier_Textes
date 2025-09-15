@@ -71,6 +71,7 @@ const app = new Vue({
         });
     },
     onClasseChanged: function (classe) {
+      document.title = "Cahier de textes - Classe " + classe;
       this.selectedClasse = classe;
       this.loadData(classe);
     },
