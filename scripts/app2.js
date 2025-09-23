@@ -96,6 +96,7 @@ const app = new Vue({
     },
     updateSeance: function (seance, nseance) {
       let formData = new URLSearchParams();
+      nseance.travail = this.editor.value;
       Object.entries(seance).forEach(arr => formData.append(arr[0], arr[1]));
       Object.entries(nseance).forEach(arr => formData.append("n" + arr[0], arr[1]));
       return fetch(`operations.php?act=update`, {
@@ -114,6 +115,7 @@ const app = new Vue({
     },
     insertData: function (seance) {
       let formData = new URLSearchParams();
+      seance.travail = this.editor.value;
       Object.entries(seance).forEach(arr => formData.append(arr[0], arr[1]));
       return fetch(`operations.php?act=insert`, {
         method: "POST",
@@ -158,8 +160,11 @@ const app = new Vue({
             if (a.date < b.date) return -1;
             return 0;
           });
+          this.seances.forEach((seance, idxSeance) => seance.index = (idxSeance + 1));
+          this.seances.reverse();
+
           this.dates = this.seances.map(s => s.date);
-          this.dates = this.dates.filter((dt, idx) => this.dates.indexOf(dt) == idx);
+          this.dates = this.dates.filter((dt, idx) => this.dates.indexOf(dt) == idx).reverse();
           this.debut = this.dates[0];
           this.fin = this.dates[this.dates.length - 1];
           this.filterSeances(this.debut, this.fin);
@@ -202,6 +207,7 @@ const app = new Vue({
       this.selectedSeance = idx;
       this.mode = "edit";
       this.originalSeance = new Seance(this.filteredSeances[idx]);
+      this.initEditFormControls();
     },
     onConfirmDeleteSeanceClicked: function (idx) {
       this.selectedSeance = idx;
@@ -210,6 +216,15 @@ const app = new Vue({
     onNewSeanceclicked: function () {
       this.mode = 'new';
       this.fillByDate(new Date());
+      this.initEditFormControls();
+    },
+    initEditFormControls: function () {
+      setTimeout(() => {
+        this.editor = Jodit.make('#travail-seance', {
+          height: 400,
+          language: 'fr'
+        });
+      }, 1000);
     },
     onModifySeanceClicked: function () {
       this.updateSeance(this.originalSeance, this.filteredSeances[this.selectedSeance])

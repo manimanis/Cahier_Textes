@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="styles/bootstrap.min.css">
   <link rel="stylesheet" href="styles/fonts.css">
   <link rel="stylesheet" href="styles/style.css">
+  <link rel="stylesheet" href="styles/jodit.min.css">
 </head>
 
 <body>
@@ -63,7 +64,7 @@
 
 
       <section v-if="!connected" v-for="seance, idx in filteredSeances">
-        <h2>{{seance.titre}}</h2>
+        <h2><small>Séance {{seance.index}} : </small> {{seance.titre}}</h2>
         <div class="row">
           <div class="col-sm-3 date">{{formatDate(seance.date)}}</div>
           <div class="col-sm-3 heure">{{seance.debut}} &rarr; {{seance.fin}}</div>
@@ -75,7 +76,7 @@
 
       <section v-if="connected" v-for="seance, idx in filteredSeances">
         <div v-if="selectedSeance != idx">
-          <h2>{{seance.titre}}</h2>
+          <h2><small>Séance {{seance.index}} : </small> {{seance.titre}}</h2>
           <div class="row">
             <div class="col-sm-3 date">{{formatDate(seance.date)}}</div>
             <div class="col-sm-3 heure">{{seance.debut}} &rarr; {{seance.fin}}</div>
@@ -235,8 +236,8 @@
           </div>
 
           <div class="my-2">
-            <label for="travail-seance">Remarques</label>
-            <textarea name="travail" id="travail-seance" cols="30" rows="2" class="form-control"
+            <label for="rem-seance">Remarques</label>
+            <textarea name="travail" id="rem-seance" cols="30" rows="2" class="form-control"
               placeholder="Indiquer vos remarques" v-model="seance.remarque"></textarea>
           </div>
 
@@ -251,6 +252,7 @@
   <script src="scripts/jquery.min.js"></script>
   <script src="scripts/bootstrap.min.js"></script>
   <script src="scripts/vue.min.js"></script>
+  <script src="scripts/jodit.min.js"></script>
   <script src="scripts/entities.js"></script>
   <script src="scripts/app2.js"></script>
 </body>

@@ -72,6 +72,7 @@ const emploi = [
 
 class Seance {
   constructor(obj = {}) {
+    this.index = obj.index || 0;
     this.titre = obj.titre || '';
     this.classe = obj.classe || '';
     this.date = obj.date || '';

@@ -58,7 +58,7 @@
       </div>
 
       <section v-for="seance, idx in seances[selectedClasse]">
-        <h2><small>Séance {{idx+1}} : </small>{{seance.titre}}</h2>
+        <h2><small>Séance {{seance.index}} : </small>{{seance.titre}}</h2>
         <div class="row">
           <div class="col-sm-3 date">{{formatDate(seance.date)}}</div>
           <div class="col-sm-3 heure">{{seance.debut}} &rarr; {{seance.fin}}</div>

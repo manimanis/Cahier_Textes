@@ -67,6 +67,8 @@ const app = new Vue({
             if (a.date < b.date) return -1;
             return 0;
           });
+          this.seances[classe].forEach((seance, idxSeance) => seance.index = (idxSeance + 1));
+          this.seances[classe].reverse();
           this.$forceUpdate();
         });
     },
