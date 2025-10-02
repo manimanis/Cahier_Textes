@@ -74,7 +74,11 @@
         <div class="travail" v-html="seance.travail"></div>
       </section>
 
-      <section v-if="connected" v-for="seance, idx in filteredSeances">
+      <div class="my-2" v-if="connected && selectedSeance == -1 && mode == 'list'">
+        <button class="btn btn-primary" v-on:click.prevent="onNewSeanceclicked()">Nouvelle séance</button>
+      </div>
+
+      <section v-if="connected && mode != 'new'" v-for="seance, idx in filteredSeances">
         <div v-if="selectedSeance != idx">
           <h2><small>Séance {{seance.index}} : </small> {{seance.titre}}</h2>
           <div class="row">
@@ -173,10 +177,6 @@
           <button class="btn btn-danger" v-on:click.prevent="onConfirmDeleteSeanceClicked(idx)">Supprimer</button>
         </div>
       </section>
-
-      <div class="my-2" v-if="connected && selectedSeance == -1 && mode == 'list'">
-        <button class="btn btn-primary" v-on:click.prevent="onNewSeanceclicked()">Nouvelle séance</button>
-      </div>
 
       <section v-if="mode == 'new'">
         <div class="my-3" v-if="alerts.length > 0">

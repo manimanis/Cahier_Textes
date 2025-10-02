@@ -11,48 +11,49 @@
 </head>
 
 <body>
-  <main class="container" id="app">
-    <article v-if="selectedClasse == ''">
+  <main id="app">
+    <article class="container" v-if="selectedClasse == ''">
       <h1>2k26</h1>
-      <div class="index-page row">
+      <div class="container index-page row">
         <div v-for="classe in classes" class="col-md-6 my-3">
           <a class="btn btn-success w-100 p-5" v-on:click.prevent="onClasseChanged(classe.shortName)"
             v-html="classe.longName"></a>
         </div>
       </div>
+    </article>
 
-      <table class="emploi">
-        <thead>
+    <article v-if="selectedClasse == ''">
+      <table class="cal-annee-scolaire">
+        <template v-for="month in monthes">
           <tr>
-            <th>&nbsp;</th>
-            <th>08h</th>
-            <th>09h</th>
-            <th>10h</th>
-            <th>11h</th>
-            <th>12h</th>
-            <th>13h</th>
-            <th>14h</th>
-            <th>15h</th>
-            <th>16h</th>
-            <th>17h</th>
+            <th colspan="37">{{month.name}}</th>
           </tr>
-        </thead>
-        <tbody>
-          <tr class="journee" v-for="jour, jourIdx in jours">
-            <th>{{jour}}</th>
-            <td v-for="seance in 10"></td>
+          <tr>
+            <th :colspan="month.days[0].date.getDay() - monthStartingDay" rowspan="3"
+              v-if="month.days[0].date.getDay() > monthStartingDay">&nbsp;</th>
+            <th v-for="day in month.days" :class="{'weekend': day.date.getDay() == 0, 'jour-travail': day.obs != ''}">
+              {{day.dayName.substring(0, 3)}}</th>
+            <th :colspan="37 - (month.days.length - monthStartingDay)" rowspan="3">&nbsp;</th>
           </tr>
-        </tbody>
+          <tr>
+            <th v-for="day in month.days" :class="{'weekend': day.date.getDay() == 0, 'jour-travail': day.obs != ''}">
+              {{day.date.getDate()}}</th>
+          </tr>
+          <tr>
+            <th class="observation" v-for="day in month.days"
+              :class="{'weekend': day.date.getDay() == 0, 'jour-travail': day.obs != ''}" v-html="day.obs"></th>
+          </tr>
+        </template>
       </table>
     </article>
 
-    <article v-if="selectedClasse != ''">
+    <article class="container" v-if="selectedClasse != ''">
       <h1>Classe {{selectedClasse}}</h1>
       <div class="row">
         <div class="col-sm-6 annee-scolaire">{{annee_scolaire}}</div>
         <div class="col-sm-6 enseignant">{{enseignant}}</div>
       </div>
-      
+
       <div class="my-2 d-print-none">
         <a href="#" v-on:click.prevent="onClasseChanged('')">&larr; Liste des classes</a>
       </div>

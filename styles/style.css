@@ -114,3 +114,28 @@ h2 {
 	text-align: center;
 	font-weight: bold;
 }
+
+.cal-annee-scolaire {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.cal-annee-scolaire td, .cal-annee-scolaire th {
+	text-align: center;
+	border: #333 solid 1px;
+	width: 50px;
+}
+
+.cal-annee-scolaire .weekend {
+  background-color: red;
+  color: white;
+}
+
+.cal-annee-scolaire .jour-travail {
+  background-color: pink;
+}
+
+.cal-annee-scolaire .observation {
+  min-height: 50px;
+  height: 50px;
+}
