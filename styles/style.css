@@ -1,6 +1,6 @@
 body {
-	font-family: 'Lato';
-	background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255,255,255,0.95)), transparent url(../images/bg.png) no-repeat center center fixed;
+  font-family: 'Lato';
+  background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)), transparent url(../images/bg.png) no-repeat center center fixed;
 }
 
 .general-infos {
@@ -16,10 +16,11 @@ body {
 }
 
 section {
-	margin: 1rem 0;
-	padding: 1rem;
-	border: #666 solid thin;
-	border-radius: 0.5rem;
+  margin: 1rem 0;
+  padding: 1rem;
+  border: #666 solid thin;
+  border-radius: 0.5rem;
+  break-inside: avoid;
 }
 
 .date::before {
@@ -42,55 +43,62 @@ section {
   content: "Contenu de la séance";
 }
 
-.annee-scolaire::before, .enseignant::before, .date::before, .heure::before, .groupe::before, .remarque::before, .travail::before {
-	display: block;
-	font-size: 0.9rem;
-	font-weight: bold;
-	color: crimson;
-	line-height: 32px;
+.annee-scolaire::before,
+.enseignant::before,
+.date::before,
+.heure::before,
+.groupe::before,
+.remarque::before,
+.travail::before {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: crimson;
+  line-height: 32px;
 }
 
 .enseignant::before {
-	background: transparent url(../images/teacher.png) no-repeat;
-	padding-left: 38px;
+  background: transparent url(../images/teacher.png) no-repeat;
+  padding-left: 38px;
 }
 
 .groupe::before {
-	background: transparent url(../images/student.png) no-repeat;
-	padding-left: 38px;
+  background: transparent url(../images/student.png) no-repeat;
+  padding-left: 38px;
 }
 
 .date::before {
-	background: transparent url(../images/calendar.png) no-repeat;
-	padding-left: 38px;
+  background: transparent url(../images/calendar.png) no-repeat;
+  padding-left: 38px;
 }
 
 .heure::before {
-	background: transparent url(../images/watch.png) no-repeat;
-	padding-left: 38px;
+  background: transparent url(../images/watch.png) no-repeat;
+  padding-left: 38px;
 }
 
-.remarque, .travail {
+.remarque,
+.travail {
   margin: 1rem 0;
 }
 
 h1 {
-	margin: 2rem 0 2rem;
-	color: firebrick;
-	font-style: italic;
-	font-weight: bold;
-	font-size: 3.5rem;
-	background: transparent url(../images/classroom.png) no-repeat left center scroll;
-	height: 128px;
-	background-size: contain;
-	padding-left: 100px;
+  margin: 2rem 0 2rem;
+  color: firebrick;
+  font-style: italic;
+  font-weight: bold;
+  font-size: 3.5rem;
+  background: transparent url(../images/classroom.png) no-repeat left center scroll;
+  height: 128px;
+  background-size: contain;
+  padding-left: 100px;
 }
 
 h1::before {
-	content: "Cahier de textes";
-	font-size: 1.5rem;
-	display: block;
-	padding-top: 24px;
+  content: "Cahier de textes";
+  font-size: 1.5rem;
+  display: block;
+  padding-top: 24px;
 }
 
 h2 {
@@ -101,29 +109,31 @@ h2 {
 
 
 .emploi {
-	width: 100%;
+  width: 100%;
 }
 
-.emploi .entete  {
-	display: flex;
+.emploi .entete {
+  display: flex;
 }
 
-.emploi th, .emploi td {
-	width: 9.1%;
-	border: #333 solid 1px;
-	text-align: center;
-	font-weight: bold;
+.emploi th,
+.emploi td {
+  width: 9.1%;
+  border: #333 solid 1px;
+  text-align: center;
+  font-weight: bold;
 }
 
 .cal-annee-scolaire {
-	width: 100%;
-	border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.cal-annee-scolaire td, .cal-annee-scolaire th {
-	text-align: center;
-	border: #333 solid 1px;
-	width: 50px;
+.cal-annee-scolaire td,
+.cal-annee-scolaire th {
+  text-align: center;
+  border: #333 solid 1px;
+  width: 50px;
 }
 
 .cal-annee-scolaire .weekend {
@@ -138,4 +148,22 @@ h2 {
 .cal-annee-scolaire .observation {
   min-height: 50px;
   height: 50px;
+}
+
+@media print {
+  body {
+    background-image: none;
+  }
+
+  section {
+    padding: 0;
+    border: 0;
+  }
+
+  h2 {
+    text-align: initial;
+    margin: 0 0 1rem;
+    font-weight: bold;
+    text-decoration: underline solid 1px;
+  }
 }
