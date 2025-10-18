@@ -2,9 +2,13 @@ const annee_scolaire = "2025/2026";
 
 const enseignant = "Mohamed Anis MANI";
 
-const classes = ["2TI1", "2SC1", "3T1", "4T1"];
+const classes = ["2TI1", "2SC1", "3T1", "4T1", "others"];
 
 const classesObjects = [
+  {
+    shortName : 'others',
+    longName: "Autres"
+  },
   {
     shortName : '2TI1',
     longName: "2<sup>e</sup> Tech. de l'informatique"
