@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emploi du temps - Cahier de textes</title>
+  <link rel="stylesheet" href="styles/bootstrap.min.css">
+  <link rel="stylesheet" href="styles/fonts.css">
+  <link rel="stylesheet" href="styles/style.css">
+  <link rel="stylesheet" href="styles/emploi-temps.css">
+</head>
+
+<body>
+  <main id="app" class="container">
+
+    <!-- Header -->
+    <div class="emploi-header">
+      <h1>
+        {{enseignant}}
+        <small class="d-block" style="font-size:0.9rem;font-weight:400;color:#b2bec3;margin-top:0.15rem;">
+          Année scolaire {{annee_scolaire}}
+        </small>
+      </h1>
+      <a href="index.html" class="back-link">
+        <span>&larr;</span> Retour au cahier de textes
+      </a>
+    </div>
+
+    <!-- Timetable - CSS Grid -->
+    <div class="timetable-grid-wrapper">
+      <div class="timetable-grid"
+        :style="{
+          'grid-template-columns': '90px repeat(6, 1fr)',
+          'grid-template-rows': '50px repeat(10, 46px)'
+        }">
+
+        <!-- Render all cells positioned via grid-row/grid-column -->
+        <div v-for="cell in allCells" :key="cell.id"
+          class="grid-cell"
+          :class="'gcell-' + cell.type"
+          :style="{
+            'grid-row': cell.row + ' / span ' + cell.rowspan,
+            'grid-column': cell.col + ' / span ' + cell.colspan,
+            'background': cell.type === 'session' ? getClassStyle(cell.classe) : null
+          }">
+
+          <!-- Header cells -->
+          <template v-if="cell.type === 'header'">
+            <div class="gheader-label">{{cell.label}}</div>
+            <div class="gheader-sub">{{cell.fullLabel}}</div>
+          </template>
+
+          <!-- Time cells -->
+          <div v-if="cell.type === 'time'" class="gtime-label">{{cell.label}}</div>
+
+          <!-- Session cells -->
+          <div v-if="cell.type === 'session'"
+            class="gsession-content"
+            :style="{'min-height': (cell.rowspan * 44) + 'px'}">
+            <div class="gsession-classe">{{cell.classe === 'others' ? 'Autres' : cell.classe}}</div>
+            <div class="gsession-time">{{cell.startTime}} → {{cell.endTime}}</div>
+            <div class="gsession-groupe" v-if="cell.groupe">{{cell.groupe}}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="summary-bar">
+        <div class="summary-item">
+          <span class="summary-icon">📚</span>
+          <span><strong>{{totalSessions}}</strong> séances / semaine</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-icon">👨‍🏫</span>
+          <span><strong>{{uniqueClasses.length}}</strong> classes</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-icon">⏱️</span>
+          <span><strong>{{totalHours}}</strong> heures / semaine</span>
+        </div>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <span class="legend-title">Classes</span>
+        <div class="legend-item" v-for="classe in uniqueClasses" :key="'l' + classe">
+          <span class="legend-color" :style="{'background': getClassColor(classe)}"></span>
+          {{classe === 'others' ? 'Autres' : classe}}
+        </div>
+        <div class="legend-item" style="margin-left:auto;">
+          <span class="legend-color" style="background:#f5f6fa;"></span>
+          Libre
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail per Class -->
+    <div class="mt-4">
+      <h2 style="border-left-color:#00b894;" class="mb-3">Détail par classe</h2>
+      <div class="row">
+        <div class="col-md-6 mb-3 detail-card" v-for="classe in uniqueClasses" :key="'d' + classe">
+          <div class="card">
+            <div class="card-header" :style="{'background': getClassStyle(classe)}">
+              <h3 style="color:#fff;margin:0;font-size:1.1rem;">{{classe === 'others' ? 'Autres' : classe}}</h3>
+            </div>
+            <div class="card-body">
+              <div v-if="getSessionsByClass(classe).length === 0" class="empty-message">
+                Aucune séance programmée
+              </div>
+              <div v-for="session in getSessionsByClass(classe)" :key="session.day + '-' + session.startTime" class="session-row">
+                <div>
+                  <span class="session-day">{{getDayName(session.day)}}</span>
+                  <span class="session-time">{{session.startTime}} → {{session.endTime}}</span>
+                </div>
+                <span class="session-group">{{session.groupe}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="scripts/vue.min.js" defer></script>
+  <script src="scripts/entities.js" defer></script>
+  <script src="scripts/emploi-temps.js" defer></script>
+</body>
+
+</html>

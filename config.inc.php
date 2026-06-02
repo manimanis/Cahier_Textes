@@ -8,6 +8,6 @@ define('PASS', 'mysqlroot');
 define('BASE', 'fiches_rens');
 
 define('SERVER_NAME', 'manimanis.github.io');
-// Pour générer une nouvelle clé
-// openssl rand -base64 172 | tr -d '\n'
-define('SECRET_KEY', 'ep9tZ2TrdjbN2RtfpJ39rI6GL62PNuSaWlS9Q3n0TSzHP12IwYQO51TxiPBsxWGONq3N/sMfW08FctyYyW0q9vNwpSeGQvQsYKCJyXPlyt79m8m/9vNVmMggeCWl6pBGASBY4SS4o9AFxtV6Xj1iwGq3JcpRpqa03jIYl8o71E76PuJT6vqq/VtLVT/J1Oq/npnN4DBMAugXTzZetqkse+CfZB8/ykRhHBDDUA==');
+// Pour générer une nouvelle clé :
+// php -r "echo base64_encode(random_bytes(64));"
+define('SECRET_KEY', 'f8a2c9d4e1b7f3a6c8d0e2f4b6a8c0d2e4f6a8b0c2d4e6f8a0b2c4d6e8f0a2b4c6d8e0f2a4c6d8e0f2a4c6d8e0f2a4');

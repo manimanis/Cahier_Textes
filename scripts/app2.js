@@ -12,30 +12,42 @@ const app = new Vue({
     classe: "",
     debut: '',
     fin: '',
-    connected: true,
+    connected: false,
     seances: [],
     dates: [],
     filteredSeances: [],
     selectedSeance: -1,
     mode: "list",
     originalSeance: null,
-    seance: null,
-    emploi_tab: []
+    localSeance: null,
+    emploi_tab: [],
+    loading: false,
+    loginPseudo: '',
+    loginPassword: '',
+    authToken: ''
   },
   mounted: function () {
-    this.connected = false;
-    this.isConnected()
-      .then(connected => {
-        this.connected = true;
-        this.loadData(this.classe);
-      })
-      .catch(error => {
-        this.addAlertMessage('danger', error);
-        this.connected = false;
-        this.loadData(this.classe);
-      });
+    // Check if previously logged in via session cookie
+    this.checkSession();
   },
   methods: {
+    /**
+     * Check if the user has an active session
+     */
+    checkSession: function () {
+      fetch('operations.php?act=authcheck')
+        .then(response => response.json())
+        .then(data => {
+          if (data.data && data.data.authenticated) {
+            this.connected = true;
+          } else {
+            this.connected = false;
+          }
+        })
+        .catch(error => {
+          this.connected = false;
+        });
+    },
     /**
      * Affiche un message d'alerte
      * @param {string} type 
@@ -68,21 +80,79 @@ const app = new Vue({
      * @param {String[]} errors 
      */
     handleErrors: function (errors) {
+      console.log(errors);
       for (let error of errors) {
         this.addAlertMessage('danger', error);
       }
+    },
+    onLoginClicked: function () {
+      let formData = new URLSearchParams();
+      formData.append('pseudo', this.loginPseudo);
+      formData.append('password', this.loginPassword);
+
+      fetch('operations.php?act=login', {
+        method: "POST",
+        body: formData
+      })
+        .then(response => response.json())
+        .then(this.handleFetch)
+        .then(data => {
+          if (data) {
+            this.authToken = data.data.token;
+            this.connected = true;
+            this.loadData(this.classe);
+          }
+        })
+        .catch(errors => {
+          this.handleErrors(errors);
+        });
+    },
+    onLogoutClicked: function () {
+      fetch('operations.php?act=logout', {
+        method: "POST"
+      })
+        .then(response => response.json())
+        .then(() => {
+          this.authToken = '';
+          this.connected = false;
+          this.classe = "";
+          this.seances = [];
+          this.dates = [];
+          this.filteredSeances = [];
+          this.selectedSeance = -1;
+          this.mode = "list";
+          this.alerts = [];
+        });
     },
     isConnected: function () {
       return fetch('operations.php?act=ping')
         .then(response => response.json())
         .then(data => data.data.ping == 'ok');
     },
+    /**
+     * Destroy Jodit editor instance to prevent memory leaks
+     */
+    destroyEditor: function () {
+      if (this.editor && this.editor.destruct) {
+        try {
+          this.editor.destruct();
+        } catch (e) {
+          // Ignore destruction errors
+        }
+        this.editor = null;
+      }
+    },
     deleteSeance: function (seance) {
       let formData = new URLSearchParams();
       Object.entries(seance).forEach(arr => formData.append(arr[0], arr[1]));
+      const headers = {};
+      if (this.authToken) {
+        headers['Authorization'] = 'Bearer ' + this.authToken;
+      }
       return fetch(`operations.php?act=delete`, {
         method: "POST",
-        body: formData
+        body: formData,
+        headers: headers
       })
         .then(response => response.json())
         .then(this.handleFetch)
@@ -96,12 +166,19 @@ const app = new Vue({
     },
     updateSeance: function (seance, nseance) {
       let formData = new URLSearchParams();
-      nseance.travail = this.editor.value;
+      if (this.editor) {
+        nseance.travail = this.editor.value;
+      }
       Object.entries(seance).forEach(arr => formData.append(arr[0], arr[1]));
       Object.entries(nseance).forEach(arr => formData.append("n" + arr[0], arr[1]));
+      const headers = {};
+      if (this.authToken) {
+        headers['Authorization'] = 'Bearer ' + this.authToken;
+      }
       return fetch(`operations.php?act=update`, {
         method: "POST",
-        body: formData
+        body: formData,
+        headers: headers
       })
         .then(response => response.json())
         .then(this.handleFetch)
@@ -115,11 +192,18 @@ const app = new Vue({
     },
     insertData: function (seance) {
       let formData = new URLSearchParams();
-      seance.travail = this.editor.value;
+      if (this.editor) {
+        seance.travail = this.editor.value;
+      }
       Object.entries(seance).forEach(arr => formData.append(arr[0], arr[1]));
+      const headers = {};
+      if (this.authToken) {
+        headers['Authorization'] = 'Bearer ' + this.authToken;
+      }
       return fetch(`operations.php?act=insert`, {
         method: "POST",
-        body: formData
+        body: formData,
+        headers: headers
       })
         .then(response => response.json())
         .then(this.handleFetch)
@@ -142,15 +226,17 @@ const app = new Vue({
         return;
       }
 
+      this.loading = true;
+
       return fetch(`json/${classe}.json`, {
         method: "GET"
       })
         .then(response => response.json())
-        //.then(this.handleFetch)
         .catch(error => {
           this.addAlertMessage('danger', `Erreur lors du chargement des données pour ${classe}!`);
         })
         .then(data => {
+          this.loading = false;
           if (data == null) {
             return null;
           }
@@ -178,7 +264,7 @@ const app = new Vue({
       const seance = this.emploi.find(s => s.day == day);
 
       if (seance) {
-        this.seance = new Seance({
+        this.localSeance = new Seance({
           classe: seance.classe,
           debut: seance.startTime,
           fin: seance.endTime,
@@ -186,7 +272,7 @@ const app = new Vue({
           date: date.toISOString().substring(0, 10)
         });
       } else {
-        this.seance = new Seance({
+        this.localSeance = new Seance({
           date: date.toISOString().substring(0, 10)
         });
       }
@@ -219,12 +305,27 @@ const app = new Vue({
       this.initEditFormControls();
     },
     initEditFormControls: function () {
-      setTimeout(() => {
-        this.editor = Jodit.make('#travail-seance', {
-          height: 400,
-          language: 'fr'
-        });
-      }, 1000);
+      // Destroy previous editor instance first to prevent memory leaks
+      this.destroyEditor();
+
+      this.$nextTick(() => {
+        try {
+          this.editor = Jodit.make('#edit-travail-seance', {
+            height: 400,
+            language: 'fr'
+          });
+        } catch (e) {
+          // Fallback: try new form editor
+          try {
+            this.editor = Jodit.make('#new-travail-seance', {
+              height: 400,
+              language: 'fr'
+            });
+          } catch (e2) {
+            // Editor not available
+          }
+        }
+      });
     },
     onModifySeanceClicked: function () {
       this.updateSeance(this.originalSeance, this.filteredSeances[this.selectedSeance])
@@ -247,7 +348,7 @@ const app = new Vue({
         });
     },
     onInsertClicked: function () {
-      this.insertData(this.seance)
+      this.insertData(this.localSeance)
         .then(data => {
           if (data != null) {
             this.loadData(this.classe)
@@ -258,8 +359,12 @@ const app = new Vue({
         });
     },
     onCancelClicked: function () {
+      // Destroy editor on cancel to free memory
+      this.destroyEditor();
+
       if (this.mode == 'edit') {
-        this.filterSeances[this.selectedSeance] = this.originalSeance;
+        // FIXED: was `this.filterSeances` (typo) instead of `this.filteredSeances`
+        this.filteredSeances[this.selectedSeance] = this.originalSeance;
       }
       this.mode = "list";
       this.selectedSeance = -1;

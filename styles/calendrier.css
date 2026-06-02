@@ -1,0 +1,124 @@
+/* ========================================
+   CALENDRIER DES SÉANCES - Minimal CSS
+   (Mise en page via Bootstrap row/col)
+   ======================================== */
+
+/* --- Header --- */
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.cal-header h1 {
+  margin: 0;
+  font-size: 2.2rem;
+  padding-bottom: 0;
+}
+
+.cal-header h1::after { display: none; }
+.cal-header h1::before { content: "Calendrier des séances"; font-size: 1rem; }
+
+/* --- Month Card --- */
+.cal-card {
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  overflow: hidden;
+  height: 100%;
+}
+
+.cal-card-header {
+  padding: 0.6rem 1rem;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #fff;
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  text-align: center;
+  text-transform: capitalize;
+}
+
+/* --- Table --- */
+.cal-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.cal-table th {
+  background: #f0f0f5;
+  color: #636e72;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 5px 2px;
+  text-align: center;
+  border: 1px solid #e0e0e0 !important;
+}
+
+.cal-table td {
+  border: 1px solid #eee !important;
+  vertical-align: top;
+  padding: 3px 2px;
+  min-height: 54px;
+  height: 54px;
+  width: 14.28%;
+  transition: background 0.15s;
+  text-align: center;
+}
+
+.cal-table td.cal-empty { background: #fafafa; }
+
+.cal-table td.cal-we { background: #fff5f5; }
+.cal-table td.cal-we .cal-day-num { color: #e74c3c; }
+
+.cal-table td.cal-jt { background: #eef2ff; }
+
+.cal-table td:hover { box-shadow: inset 0 0 0 2px #6c5ce7; }
+
+.cal-day-num {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #2d3436;
+  line-height: 1.3;
+}
+
+.cal-day-obs {
+  font-size: 0.58rem;
+  line-height: 1.3;
+  min-height: 1em;
+}
+
+/* --- Class Tag --- */
+.cal-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  color: #fff;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 0.55rem;
+  font-weight: 600;
+  margin: 1px 0;
+  white-space: nowrap;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .cal-header h1 { font-size: 1.6rem; }
+  .cal-table td { min-height: 46px; height: 46px; }
+  .cal-table th { font-size: 0.65rem; }
+}
+
+@media (max-width: 576px) {
+  .cal-header { flex-direction: column; align-items: flex-start; }
+}
+
+/* --- Print --- */
+@media print {
+  .cal-card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
+  .cal-card-header { background: #6c5ce7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .cal-tag { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .d-print-none { display: none !important; }
+}

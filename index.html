@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="widdiv=device-widdiv, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cahier de textes</title>
   <link rel="stylesheet" href="styles/bootstrap.min.css">
   <link rel="stylesheet" href="styles/fonts.css">
@@ -13,38 +13,24 @@
 <body>
   <main id="app">
     <article class="container" v-if="selectedClasse == ''">
-      <h1>2k26</h1>
+      <h1>Cahier de textes</h1>
+      
+      <!-- Navigation links -->
+      <div class="d-flex justify-content-end mb-4" style="gap:0.5rem;">
+        <a href="calendrier.html" class="btn btn-primary">
+          <span>📅</span> Calendrier
+        </a>
+        <a href="emploi_temps.html" class="btn btn-primary">
+          <span>⏰</span> Emploi du temps
+        </a>
+      </div>
+
       <div class="container index-page row">
         <div v-for="classe in classes" class="col-md-6 my-3">
           <a class="btn btn-success w-100 p-5" v-on:click.prevent="onClasseChanged(classe.shortName)"
             v-html="classe.longName"></a>
         </div>
       </div>
-    </article>
-
-    <article v-if="selectedClasse == ''">
-      <table class="cal-annee-scolaire">
-        <template v-for="month in monthes">
-          <tr>
-            <th colspan="37">{{month.name}}</th>
-          </tr>
-          <tr>
-            <th :colspan="month.days[0].date.getDay() - monthStartingDay" rowspan="3"
-              v-if="month.days[0].date.getDay() > monthStartingDay">&nbsp;</th>
-            <th v-for="day in month.days" :class="{'weekend': day.date.getDay() == 0, 'jour-travail': day.obs != ''}">
-              {{day.dayName.substring(0, 3)}}</th>
-            <th :colspan="37 - (month.days.length - monthStartingDay)" rowspan="3">&nbsp;</th>
-          </tr>
-          <tr>
-            <th v-for="day in month.days" :class="{'weekend': day.date.getDay() == 0, 'jour-travail': day.obs != ''}">
-              {{day.date.getDate()}}</th>
-          </tr>
-          <tr>
-            <th class="observation" v-for="day in month.days"
-              :class="{'weekend': day.date.getDay() == 0, 'jour-travail': day.obs != ''}" v-html="day.obs"></th>
-          </tr>
-        </template>
-      </table>
     </article>
 
     <article class="container" v-if="selectedClasse != ''">
@@ -70,13 +56,12 @@
       </section>
     </article>
 
-
   </main>
-  <script src="scripts/jquery.min.js"></script>
-  <script src="scripts/bootstrap.min.js"></script>
-  <script src="scripts/vue.min.js"></script>
-  <script src="scripts/entities.js"></script>
-  <script src="scripts/app3.js"></script>
+  <script src="scripts/jquery.min.js" defer></script>
+  <script src="scripts/bootstrap.min.js" defer></script>
+  <script src="scripts/vue.min.js" defer></script>
+  <script src="scripts/entities.js" defer></script>
+  <script src="scripts/app3.js" defer></script>
 </body>
 
 </html>

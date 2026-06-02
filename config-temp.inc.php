@@ -1,5 +1,6 @@
 <?php
 // Modify this file and save it as : config.inc.php
+// IMPORTANT: Never commit the real config.inc.php with production secrets to Git!
 
 /**
  * Database configuration
@@ -9,7 +10,8 @@ define('USER', 'root');
 define('PASS', '');
 define('BASE', 'fiches_rens');
 
-define('SERVER_NAME', 'manimanis.github.io');
-// Pour générer une nouvelle clé
-// openssl rand -base64 172 | tr -d '\n'
-define('SECRET_KEY', 'ep9tZ2TrdjbN2RtfpJ39rI6GL62PNuSaWlS9Q3n0TSzHP12IwYQO51TxiPBsxWGONq3N/sMfW08FctyYyW0q9vNwpSeGQvQsYKCJyXPlyt79m8m/9vNVmMggeCWl6pBGASBY4SS4o9AFxtV6Xj1iwGq3JcpRpqa03jIYl8o71E76PuJT6vqq/VtLVT/J1Oq/npnN4DBMAugXTzZetqkse+CfZB8/ykRhHBDDUA==');
+define('SERVER_NAME', 'localhost');
+// Pour générer une nouvelle clé, exécutez dans un terminal :
+// php -r "echo base64_encode(random_bytes(64));"
+// Remplacez SECRET_KEY ci-dessous par la valeur générée
+define('SECRET_KEY', 'CHANGE_ME_WITH_A_RANDOM_SECRET_KEY');

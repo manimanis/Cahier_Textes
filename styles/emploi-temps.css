@@ -1,0 +1,244 @@
+/* ========================================
+   EMPLOI DU TEMPS - CSS Grid Style
+   (Générique : couleurs gérées par JS inline)
+   ======================================== */
+
+/* --- Page Header --- */
+.emploi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.emploi-header .back-link {
+  color: #6c5ce7;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 0.6rem;
+  background: rgba(108, 92, 231, 0.08);
+  transition: all 0.25s ease;
+}
+
+.emploi-header .back-link:hover {
+  background: rgba(108, 92, 231, 0.15);
+  text-decoration: none;
+  transform: translateX(-2px);
+}
+
+.emploi-header h1 {
+  margin: 0;
+  font-size: 2.2rem;
+  padding-bottom: 0;
+}
+
+.emploi-header h1::after { display: none; }
+.emploi-header h1::before { content: "Mon emploi du temps"; font-size: 1rem; }
+
+/* --- Grid Wrapper --- */
+.timetable-grid-wrapper {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.timetable-grid {
+  display: grid;
+  width: 100%;
+}
+
+/* --- Grid Cells (base) --- */
+.grid-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #f0f0f0;
+  border-right: 1px solid #f0f0f0;
+  overflow: hidden;
+  position: relative;
+}
+
+/* --- Header Cells --- */
+.gcell-header {
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
+  flex-direction: column;
+  padding: 0.5rem;
+}
+
+.gcell-header .gheader-label { line-height: 1.2; }
+
+.gcell-header .gheader-sub {
+  font-weight: 400;
+  font-size: 0.75rem;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+/* --- Corner Cell --- */
+.gcell-corner { background: #5a4bd1; }
+
+/* --- Time Cells --- */
+.gcell-time {
+  background: #f8f9fa;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #636e72;
+}
+
+/* --- Empty Cells --- */
+.gcell-empty { background: #fafafa; }
+
+/* --- Session Cells --- */
+.gcell-session {
+  padding: 0.2rem;
+  color: #fff;
+}
+
+.gsession-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.5rem;
+  padding: 0.4rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-align: center;
+}
+
+.gcell-session:hover .gsession-content {
+  transform: scale(1.02);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.gsession-classe { font-weight: 700; font-size: 0.95rem; margin-bottom: 2px; }
+.gsession-time { font-size: 0.7rem; opacity: 0.9; }
+.gsession-groupe { font-size: 0.65rem; opacity: 0.7; margin-top: 2px; }
+
+/* --- Summary Bar --- */
+.summary-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 1rem 1.5rem;
+  background: #ffffff;
+  border-top: 1px solid #f0f0f0;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: #636e72;
+}
+
+.summary-item strong { color: #2d3436; font-size: 1.1rem; }
+
+.summary-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(108, 92, 231, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+/* --- Legend --- */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: #f8f9fa;
+  border-top: 1px solid #eee;
+  align-items: center;
+}
+
+.legend-title {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: #636e72;
+  margin-right: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #2d3436;
+}
+
+.legend-color { width: 16px; height: 16px; border-radius: 4px; }
+
+/* --- Detail per class cards --- */
+.detail-card .card-header { border: none; padding: 1rem 1.25rem; }
+.detail-card .card-body { padding: 1rem !important; }
+
+.detail-card .session-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-card .session-row:last-child { border-bottom: none; }
+
+.detail-card .session-day { font-weight: 600; color: #2d3436; }
+.detail-card .session-time { color: #636e72; margin-left: 0.5rem; }
+
+.detail-card .session-group {
+  background: #f0f0f0;
+  color: #636e72;
+  padding: 0.2rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.detail-card .empty-message { text-align: center; color: #b2bec3; padding: 1rem 0; }
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .timetable-grid-wrapper { overflow-x: auto; }
+  .timetable-grid { min-width: 600px; }
+  .gcell-header { font-size: 0.75rem; padding: 0.4rem; }
+  .gcell-time { font-size: 0.75rem; }
+  .gsession-classe { font-size: 0.8rem; }
+  .emploi-header h1 { font-size: 1.6rem; }
+  .summary-bar { flex-direction: column; gap: 0.75rem; }
+}
+
+@media (max-width: 576px) {
+  .emploi-header { flex-direction: column; align-items: flex-start; }
+}
+
+/* --- Print --- */
+@media print {
+  .timetable-grid-wrapper { box-shadow: none; border: 1px solid #ddd; }
+  .gcell-header { background: #6c5ce7 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .gcell-session { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .back-link, .d-print-none { display: none !important; }
+}

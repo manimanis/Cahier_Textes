@@ -1,6 +1,11 @@
 <?php
+// Start session for authentication
+session_start();
+
 define("JSON_FOLDER", dirname(__FILE__)."/json");
-define("CLASSES", ["2TI1", "4T1", "3T1", "2SC1"]);
+define("CLASSES", ["classe1", "classe2", "classe3", "classe4", "classe5"]);
+
+require_once 'config.inc.php';
 
 require_once 'inc/ErrorCollection.php';
 

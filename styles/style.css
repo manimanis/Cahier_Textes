@@ -1,26 +1,37 @@
+/* ========================================
+   CAHIER DE TEXTES - Modern Light Theme
+   ======================================== */
+
+/* --- Import Lato Font --- */
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
+
+/* --- Global Reset & Base --- */
+* {
+  box-sizing: border-box;
+}
+
 body {
-  font-family: 'Lato';
-  background: linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)), transparent url(../images/bg.png) no-repeat center center fixed;
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #f0f2f5 100%);
+  background-attachment: fixed;
+  color: #2d3436;
+  line-height: 1.7;
+  min-height: 100vh;
 }
 
-.general-infos {
-  display: flex;
+/* --- Container Enhancement --- */
+.container {
+  padding-top: 1.5rem;
+  padding-bottom: 3rem;
 }
 
+/* --- Labels (before pseudo-elements) --- */
 .annee-scolaire::before {
   content: "Année Scolaire";
 }
 
 .enseignant::before {
   content: "Enseignant"
-}
-
-section {
-  margin: 1rem 0;
-  padding: 1rem;
-  border: #666 solid thin;
-  border-radius: 0.5rem;
-  break-inside: avoid;
 }
 
 .date::before {
@@ -50,120 +61,495 @@ section {
 .groupe::before,
 .remarque::before,
 .travail::before {
-  display: block;
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: crimson;
-  line-height: 32px;
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #6c5ce7;
+  background: rgba(108, 92, 231, 0.1);
+  padding: 0.15rem 0.75rem;
+  border-radius: 1rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.6;
+  margin-bottom: 0.35rem;
 }
 
 .enseignant::before {
-  background: transparent url(../images/teacher.png) no-repeat;
-  padding-left: 38px;
+  background: rgba(0, 184, 148, 0.1);
+  color: #00b894;
+  padding-left: 0.75rem;
 }
 
 .groupe::before {
-  background: transparent url(../images/student.png) no-repeat;
-  padding-left: 38px;
+  background: rgba(253, 203, 110, 0.2);
+  color: #d63031;
+  padding-left: 0.75rem;
 }
 
 .date::before {
-  background: transparent url(../images/calendar.png) no-repeat;
-  padding-left: 38px;
+  background: rgba(116, 185, 255, 0.15);
+  color: #0984e3;
+  padding-left: 0.75rem;
 }
 
 .heure::before {
-  background: transparent url(../images/watch.png) no-repeat;
-  padding-left: 38px;
+  background: rgba(162, 155, 254, 0.15);
+  color: #6c5ce7;
+  padding-left: 0.75rem;
 }
 
-.remarque,
-.travail {
-  margin: 1rem 0;
+.remarque::before {
+  background: rgba(253, 121, 168, 0.12);
+  color: #e84393;
+  padding-left: 0.75rem;
 }
 
+.travail::before {
+  background: rgba(85, 239, 196, 0.15);
+  color: #00b894;
+  padding-left: 0.75rem;
+}
+
+/* --- Info Row (Année Scolaire & Enseignant) --- */
+.annee-scolaire,
+.enseignant {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #636e72;
+  margin-bottom: 0.5rem;
+}
+
+.annee-scolaire {
+  text-align: left;
+}
+
+.enseignant {
+  text-align: right;
+}
+
+@media (max-width: 576px) {
+  .annee-scolaire,
+  .enseignant {
+    text-align: center;
+  }
+}
+
+/* --- Main Title h1 --- */
 h1 {
-  margin: 2rem 0 2rem;
-  color: firebrick;
-  font-style: italic;
-  font-weight: bold;
-  font-size: 3.5rem;
-  background: transparent url(../images/classroom.png) no-repeat left center scroll;
-  height: 128px;
-  background-size: contain;
-  padding-left: 100px;
+  margin: 1.5rem 0 2rem;
+  color: #2d3436;
+  font-weight: 900;
+  font-size: 2.8rem;
+  position: relative;
+  padding-bottom: 0.75rem;
+}
+
+h1::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+  border-radius: 2px;
 }
 
 h1::before {
   content: "Cahier de textes";
-  font-size: 1.5rem;
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: #b2bec3;
   display: block;
-  padding-top: 24px;
+  margin-bottom: 0.25rem;
+  letter-spacing: 1px;
 }
 
+/* --- h2 (Seance title) --- */
 h2 {
-  margin: 0 0 2rem;
-  text-align: center;
-  color: #857;
+  margin: 0 0 1rem;
+  font-weight: 700;
+  color: #2d3436;
+  font-size: 1.4rem;
+  border-left: 4px solid #6c5ce7;
+  padding-left: 1rem;
 }
 
-
-.emploi {
-  width: 100%;
+h2 small {
+  font-weight: 400;
+  color: #b2bec3;
+  font-size: 0.85rem;
 }
 
-.emploi .entete {
-  display: flex;
+/* --- Section (Seance Card) --- */
+section {
+  margin: 1.25rem 0;
+  padding: 1.5rem;
+  background: #ffffff;
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+  break-inside: avoid;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
 }
 
-.emploi th,
-.emploi td {
-  width: 9.1%;
-  border: #333 solid 1px;
-  text-align: center;
-  font-weight: bold;
+section:hover {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
 }
 
+/* --- Remarque & Travail Content --- */
+.remarque,
+.travail {
+  margin: 0.75rem 0;
+  padding: 1rem 1.25rem;
+  border-radius: 0.75rem;
+  background: #f8f9fa;
+  line-height: 1.8;
+}
+
+.remarque {
+  background: #fff3f3;
+  border-left: 3px solid #e17055;
+}
+
+.travail {
+  background: #f0f5ff;
+  border-left: 3px solid #6c5ce7;
+}
+
+/* --- Seance Row (date, heure, groupe) --- */
+.row .date,
+.row .heure,
+.row .groupe {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #2d3436;
+}
+
+/* --- Alert Messages --- */
+.alert-secondary {
+  background: #dfe6e9;
+  border: none;
+  color: #2d3436;
+  border-radius: 0.75rem;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.alert-danger {
+  border-radius: 0.75rem;
+  border: none;
+}
+
+.alert-success {
+  border-radius: 0.75rem;
+  border: none;
+}
+
+/* --- Buttons --- */
+.btn {
+  border-radius: 0.6rem;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #5f4bd6, #8c7ff5);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #00b894, #55efc4);
+  border: none;
+  color: #fff;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #00a37e, #3dd9a7);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #d63031, #e17055);
+  border: none;
+}
+
+.btn-danger:hover {
+  background: linear-gradient(135deg, #c0392b, #d35400);
+}
+
+.btn-secondary {
+  background: #dfe6e9;
+  border: none;
+  color: #2d3436;
+}
+
+.btn-secondary:hover {
+  background: #b2bec3;
+  color: #2d3436;
+}
+
+/* --- Forms --- */
+.form-control {
+  border-radius: 0.6rem;
+  border: 2px solid #e0e0e0;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.95rem;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  background: #ffffff;
+  height: initial;
+}
+
+.form-control:focus {
+  border-color: #6c5ce7;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+}
+
+select.form-control {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23636e72' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  padding-right: 2rem;
+}
+
+label {
+  font-weight: 600;
+  color: #636e72;
+  font-size: 0.85rem;
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- Login Card --- */
+.card {
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.card-header {
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  color: #fff;
+  border: none;
+  padding: 1.25rem 1.5rem;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 1.3rem;
+}
+
+.card-body {
+  padding: 2rem;
+}
+
+/* --- Back Link --- */
+a[href="#"] {
+  color: #6c5ce7;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+a[href="#"]:hover {
+  color: #5f4bd6;
+  text-decoration: underline;
+}
+
+/* --- Loading Spinner --- */
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+  color: #6c5ce7 !important;
+}
+
+/* --- Index Page (Class buttons) --- */
+.index-page .btn-success {
+  font-size: 1.1rem;
+  font-weight: 700;
+  padding: 2rem 1rem !important;
+  border-radius: 1rem !important;
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe) !important;
+  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.25);
+  transition: all 0.3s ease;
+}
+
+.index-page .btn-success:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(108, 92, 231, 0.35);
+}
+
+/* --- Calendar Table --- */
 .cal-annee-scolaire {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 2px;
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
 }
 
 .cal-annee-scolaire td,
 .cal-annee-scolaire th {
   text-align: center;
-  border: #333 solid 1px;
+  border: none;
   width: 50px;
+  padding: 4px 2px;
+  font-size: 0.85rem;
+}
+
+.cal-annee-scolaire th:first-child {
+  background: transparent;
+  border: none;
 }
 
 .cal-annee-scolaire .weekend {
-  background-color: red;
-  color: white;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24) !important;
+  color: #fff;
+  border-radius: 6px;
+  font-weight: 700;
 }
 
 .cal-annee-scolaire .jour-travail {
-  background-color: pink;
+  background: linear-gradient(135deg, #dfe6e9, #b2bec3) !important;
+  border-radius: 6px;
 }
 
 .cal-annee-scolaire .observation {
-  min-height: 50px;
-  height: 50px;
+  min-height: 40px;
+  height: 40px;
+  font-size: 0.75rem;
+  vertical-align: top;
+  padding: 2px;
+  border-radius: 6px;
 }
 
+.cal-annee-scolaire th[colspan] {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2d3436;
+  padding: 0.75rem 0;
+  text-transform: capitalize;
+}
+
+.cal-annee-scolaire th:not([colspan]) {
+  font-weight: 700;
+  color: #636e72;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+  
+  h1::before {
+    font-size: 1rem;
+  }
+  
+  h2 {
+    font-size: 1.1rem;
+  }
+  
+  section {
+    padding: 1rem;
+  }
+  
+  .cal-annee-scolaire td,
+  .cal-annee-scolaire th {
+    width: auto;
+    padding: 2px 1px;
+    font-size: 0.7rem;
+  }
+}
+
+/* --- Delete Confirmation Section --- */
+section .alert-danger {
+  margin-top: 1rem;
+}
+
+/* --- New/Edit Form Inside Section --- */
+section form {
+  margin-top: 0.5rem;
+}
+
+/* --- Textarea specific --- */
+textarea.form-control {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* --- Print --- */
 @media print {
   body {
-    background-image: none;
+    background: #fff;
   }
-
+  
   section {
-    padding: 0;
-    border: 0;
+    padding: 0.75rem;
+    box-shadow: none;
+    border: 1px solid #ddd;
+    break-inside: avoid;
+    transform: none !important;
   }
-
+  
+  section:hover {
+    box-shadow: none;
+    transform: none;
+  }
+  
   h2 {
-    text-align: initial;
-    margin: 0 0 1rem;
-    font-weight: bold;
-    text-decoration: underline solid 1px;
+    text-align: left;
+    border-left: none;
+    padding-left: 0;
+    font-size: 1.1rem;
   }
+  
+  .btn, .d-print-none {
+    display: none !important;
+  }
+  
+  .remarque, .travail {
+    background: #f9f9f9;
+    border-left: 2px solid #999;
+  }
+}
+
+/* --- Utility: smooth scroll --- */
+html {
+  scroll-behavior: smooth;
+}
+
+/* --- Card hover effect for sections (admin) --- */
+section form#form-seance-edit,
+section form#form-seance-new {
+  background: #fafcff;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin: 0.5rem -0.5rem;
 }

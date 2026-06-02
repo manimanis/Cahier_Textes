@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendrier des séances - Cahier de textes</title>
+  <link rel="stylesheet" href="styles/bootstrap.min.css">
+  <link rel="stylesheet" href="styles/fonts.css">
+  <link rel="stylesheet" href="styles/style.css">
+  <link rel="stylesheet" href="styles/calendrier.css">
+</head>
+
+<body>
+  <main id="app" class="container">
+
+    <div class="cal-header">
+      <h1>
+        {{enseignant}}
+        <small class="d-block" style="font-size:0.9rem;font-weight:400;color:#b2bec3;margin-top:0.15rem;">
+          Année scolaire {{annee_scolaire}}
+        </small>
+      </h1>
+      <div class="d-flex" style="gap:0.5rem;">
+        <a href="emploi_temps.html" class="btn btn-primary btn-sm">📅 Emploi du temps</a>
+        <a href="index.html" class="btn btn-secondary btn-sm">&larr; Retour</a>
+      </div>
+    </div>
+
+    <div v-if="loading" class="text-center py-5">
+      <div class="spinner-border text-primary mb-3" role="status"></div>
+      <p class="text-muted">Chargement du calendrier...</p>
+    </div>
+
+    <!-- 2 months per row using Bootstrap grid -->
+    <div v-if="!loading">
+      <div v-for="(pair, pi) in monthPairs" :key="'pair' + pi" class="row mb-4">
+        <div v-for="(month, mi) in pair" :key="'m' + pi + '-' + mi" class="col-sm-6 mb-3 mb-sm-0">
+          <div class="cal-card">
+            <div class="cal-card-header">{{month.name}}</div>
+            <table class="cal-table table table-borderless mb-0">
+              <thead>
+                <tr>
+                  <th v-for="d in ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']" :key="d">{{d}}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(week, wi) in month.weeks" :key="wi">
+                  <td v-for="(day, di) in week" :key="di" :class="cellCls(day)">
+                    <template v-if="day">
+                      <div class="cal-day-num">{{day.date.getDate()}}</div>
+                      <div class="cal-day-obs" v-html="day.obs || '&nbsp;'"></div>
+                    </template>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="scripts/vue.min.js" defer></script>
+  <script src="scripts/entities.js" defer></script>
+  <script src="scripts/calendrier.js" defer></script>
+</body>
+
+</html>
