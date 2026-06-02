@@ -1,78 +1,22 @@
-const annee_scolaire = "2025/2026";
+/* ========================================
+   ENTITIES - Configuration dynamique
+   Charge les données depuis config.json
+   ======================================== */
 
-const enseignant = "Mohamed Anis MANI";
-
-const classes = ["2TI1", "2SC1", "3T1", "4T1", "others"];
-
-const classesObjects = [
-  {
-    shortName : 'others',
-    longName: "Autres"
-  },
-  {
-    shortName : '2TI1',
-    longName: "2<sup>e</sup> Tech. de l'informatique"
-  },
-  {
-    shortName : '2SC1',
-    longName: "2<sup>e</sup> Sciences"
-  },
-  {
-    shortName : '3T1',
-    longName: "3<sup>e</sup> Techniques"
-  },
-  {
-    shortName : '4T1',
-    longName: "4<sup>e</sup> Techniques"
-  }
+// Valeurs par défaut (fallback si serveur indisponible)
+let annee_scolaire = "2025/2026";
+let enseignant = "Mohamed Anis MANI";
+let classes = ["2TI1", "2SC1", "3T1", "4T1", "others"];
+let classesObjects = [
+  { shortName: 'others', longName: "Autres" },
+  { shortName: '2TI1', longName: "2<sup>e</sup> Tech. de l'informatique" },
+  { shortName: '2SC1', longName: "2<sup>e</sup> Sciences" },
+  { shortName: '3T1', longName: "3<sup>e</sup> Techniques" },
+  { shortName: '4T1', longName: "4<sup>e</sup> Techniques" }
 ];
-
-const groupes = ["Toute la classe", "Groupe 1", "Groupe 2"];
-
-const emploi = [
-  {
-    day: 4,
-    startTime: "10:00",
-    endTime: "12:00",
-    classe: "2SC1",
-    groupe: groupes[0]
-  },
-  {
-    day: 1,
-    startTime: "14:00",
-    endTime: "17:00",
-    classe: "4T1",
-    groupe: groupes[0]
-  },
-  {
-    day: 2,
-    startTime: "14:00",
-    endTime: "17:00",
-    classe: "3T1",
-    groupe: groupes[0]
-  },
-  {
-    day: 3,
-    startTime: "08:00",
-    endTime: "12:00",
-    classe: "2TI1",
-    groupe: groupes[0]
-  },
-  {
-    day: 2,
-    startTime: "10:00",
-    endTime: "12:00",
-    classe: "2TI1",
-    groupe: groupes[0]
-  },
-  {
-    day: 6,
-    startTime: "08:00",
-    endTime: "12:00",
-    classe: "2TI1",
-    groupe: groupes[0]
-  }
-];
+let groupes = ["Toute la classe", "Groupe 1", "Groupe 2"];
+let emploi = [];
+let yearsList = []; // Liste de toutes les années (pour sélecteur)
 
 class Seance {
   constructor(obj = {}) {
@@ -91,4 +35,47 @@ class Seance {
 function formatDate(date) {
   const dt = new Date(date);
   return dt.toLocaleDateString('fr', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric'});
+}
+
+/**
+ * Charge la configuration depuis le serveur et met à jour les variables globales.
+ * @param {string} [yearLabel] - Année à charger (sinon année courante)
+ * @returns {Promise<object>} L'objet année chargé
+ */
+function loadConfig(yearLabel) {
+  return fetch('operations.php?act=getconfig')
+    .then(r => r.json())
+    .then(data => {
+      if (data.status !== 'ok' || !data.data || !data.data.config) {
+        throw new Error('Config non disponible');
+      }
+      const config = data.data.config;
+      let year = null;
+
+      if (yearLabel) {
+        year = config.years.find(y => y.label === yearLabel);
+      }
+      if (!year) {
+        year = config.years.find(y => y.isCurrent) || config.years[config.years.length - 1] || null;
+      }
+
+      yearsList = config.years || [];
+
+      if (year) {
+        annee_scolaire = year.label;
+        classes = year.classes || [];
+        groupes = year.groupes || ["Toute la classe", "Groupe 1", "Groupe 2"];
+        emploi = year.emploi || [];
+
+        classesObjects = classes.map(cls => ({
+          shortName: cls,
+          longName: (year.classesDisplay && year.classesDisplay[cls]) || cls
+        }));
+      }
+      return year;
+    })
+    .catch(() => {
+      // Fallback : garder les valeurs par défaut
+      return null;
+    });
 }

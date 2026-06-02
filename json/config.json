@@ -1,0 +1,186 @@
+{
+    "years": [
+        {
+            "label": "2024\/2025",
+            "startMonth": 9,
+            "classes": [
+                "2TI1",
+                "2SC1",
+                "3T1",
+                "4T1",
+                "others"
+            ],
+            "classesDisplay": {
+                "2TI1": "2<sup>e<\/sup> Tech. de l'informatique",
+                "2SC1": "2<sup>e<\/sup> Sciences",
+                "3T1": "3<sup>e<\/sup> Techniques",
+                "4T1": "4<sup>e<\/sup> Techniques",
+                "others": "Autres"
+            },
+            "groupes": [
+                "Toute la classe",
+                "Groupe 1",
+                "Groupe 2"
+            ],
+            "emploi": [
+                {
+                    "day": 4,
+                    "startTime": "10:00",
+                    "endTime": "12:00",
+                    "classe": "2SC1",
+                    "groupe": "Toute la classe"
+                },
+                {
+                    "day": 1,
+                    "startTime": "14:00",
+                    "endTime": "17:00",
+                    "classe": "4T1",
+                    "groupe": "Toute la classe"
+                },
+                {
+                    "day": 2,
+                    "startTime": "14:00",
+                    "endTime": "17:00",
+                    "classe": "3T1",
+                    "groupe": "Toute la classe"
+                },
+                {
+                    "day": 3,
+                    "startTime": "08:00",
+                    "endTime": "12:00",
+                    "classe": "2TI1",
+                    "groupe": "Toute la classe"
+                },
+                {
+                    "day": 2,
+                    "startTime": "10:00",
+                    "endTime": "12:00",
+                    "classe": "2TI1",
+                    "groupe": "Toute la classe"
+                },
+                {
+                    "day": 6,
+                    "startTime": "08:00",
+                    "endTime": "12:00",
+                    "classe": "2TI1",
+                    "groupe": "Toute la classe"
+                }
+            ],
+            "isCurrent": false
+        },
+        {
+            "label": "2025\/2026",
+            "startMonth": 9,
+            "classes": [
+                "2TI1",
+                "2SC1",
+                "3T1",
+                "4T1",
+                "others"
+            ],
+            "classesDisplay": {
+                "2TI1": "2<sup>e<\/sup> Tech. de l'informatique",
+                "2SC1": "2<sup>e<\/sup> Sciences",
+                "3T1": "3<sup>e<\/sup> Techniques",
+                "4T1": "4<sup>e<\/sup> Techniques",
+                "others": "Autres"
+            },
+            "groupes": [
+                "Toute la classe",
+                "Groupe 1",
+                "Groupe 2"
+            ],
+            "emploi": [
+                {
+                    "day": 4,
+                    "startTime": "10:00",
+                    "endTime": "12:00",
+                    "classe": "2SC1",
+                    "groupe": "Toute la classe"
+                },
+                {
+                    "day": 1,
+                    "startTime": "14:00",
+                    "endTime": "17:00",
+                    "classe": "4T1",
+                    "groupe": "Toute la classe"
+                },
+                {
+                    "day": 2,
+                    "startTime": "14:00",
+                    "endTime": "17:00",
+                    "classe": "3T1",
+                    "groupe": "Toute la classe"
+                },
+                {
+                    "day": 3,
+                    "startTime": "08:00",
+                    "endTime": "12:00",
+                    "classe": "2TI1",
+                    "groupe": "Toute la classe"
+                },
+                {
+                    "day": 2,
+                    "startTime": "10:00",
+                    "endTime": "12:00",
+                    "classe": "2TI1",
+                    "groupe": "Toute la classe"
+                },
+                {
+                    "day": 6,
+                    "startTime": "08:00",
+                    "endTime": "12:00",
+                    "classe": "2TI1",
+                    "groupe": "Toute la classe"
+                }
+            ],
+            "isCurrent": false
+        },
+        {
+            "label": "2026\/2027",
+            "startMonth": 9,
+            "classes": [
+                "2INFO1",
+                "3T2"
+            ],
+            "classesDisplay": {
+                "2TI1": "2<sup>e<\/sup> Tech. de l'informatique",
+                "2SC1": "2<sup>e<\/sup> Sciences",
+                "3T1": "3<sup>e<\/sup> Techniques",
+                "4T1": "4<sup>e<\/sup> Techniques",
+                "others": "Autres",
+                "2INFO1": "2<sup>e<\/sup> INFO 1",
+                "3T2": "3<sup>e<\/sup> Techniques 2"
+            },
+            "groupes": [
+                "Toute la classe",
+                "Groupe 1",
+                "Groupe 2"
+            ],
+            "emploi": [
+                {
+                    "day": 1,
+                    "startTime": "08:00",
+                    "endTime": "10:00",
+                    "classe": "2INFO1",
+                    "groupe": "Groupe 1"
+                },
+                {
+                    "day": 1,
+                    "startTime": "12:00",
+                    "endTime": "14:00",
+                    "classe": "2INFO1",
+                    "groupe": "Groupe 2"
+                },
+                {
+                    "day": 2,
+                    "startTime": "15:00",
+                    "endTime": "18:00",
+                    "classe": "3T2",
+                    "groupe": "Toute la classe"
+                }
+            ],
+            "isCurrent": true
+        }
+    ]
+}

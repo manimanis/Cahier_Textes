@@ -1,0 +1,76 @@
+/* ========================================
+   GESTION - Administration Styles
+   ======================================== */
+
+.gestion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.gestion-header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.section-card {
+  background: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+
+.section-card .card-title {
+  padding: 0.75rem 1.25rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.section-card .card-body {
+  padding: 1.25rem;
+}
+
+.emploi-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  flex-wrap: wrap;
+}
+
+.emploi-row:hover {
+  background: #f8f9fa;
+}
+
+.badge-year {
+  background: #6c5ce7;
+  color: #fff;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.badge-year.active {
+  background: #00b894;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #b2bec3;
+}
+
+@media (max-width: 768px) {
+  .emploi-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

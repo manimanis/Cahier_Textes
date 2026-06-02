@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion - Cahier de textes</title>
+  <link rel="stylesheet" href="styles/bootstrap.min.css">
+  <link rel="stylesheet" href="styles/fonts.css">
+  <link rel="stylesheet" href="styles/style.css">
+  <link rel="stylesheet" href="styles/gestion.css">
+</head>
+
+<body>
+  <main id="app" class="container">
+
+    <div class="gestion-header">
+      <h1>Gestion de l'application</h1>
+      <div>
+        <a href="index.html" class="btn btn-secondary btn-sm">&larr; Cahier de textes</a>
+        <a href="emploi_temps.html" class="btn btn-primary btn-sm">📅 Emploi du temps</a>
+      </div>
+    </div>
+
+    <div v-if="loading" class="text-center py-5">
+      <div class="spinner-border text-primary mb-3" role="status"></div>
+      <p class="text-muted">Chargement...</p>
+    </div>
+
+    <div v-if="!loading && !isLoggedIn" class="row justify-content-center my-5">
+      <div class="col-sm-6">
+        <div class="section-card">
+          <div class="card-title">Connexion requise</div>
+          <div class="card-body">
+            <form v-on:submit.prevent="login()">
+              <div class="form-group mb-3">
+                <label for="g-pseudo">Nom d'utilisateur</label>
+                <input type="text" id="g-pseudo" class="form-control" v-model="loginPseudo" required>
+              </div>
+              <div class="form-group mb-3">
+                <label for="g-password">Mot de passe</label>
+                <input type="password" id="g-password" class="form-control" v-model="loginPassword" required>
+              </div>
+              <div v-if="loginError" class="alert alert-danger py-2">{{loginError}}</div>
+              <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="!loading && isLoggedIn">
+
+      <!-- ============ ANNÉES ============ -->
+      <div class="section-card">
+        <div class="card-title d-flex justify-content-between align-items-center">
+          <span>📅 Années scolaires</span>
+          <button class="btn btn-primary btn-sm" v-on:click="showCreateYear = true">+ Nouvelle année</button>
+        </div>
+        <div class="card-body">
+          <div v-if="showCreateYear" class="mb-3 p-3" style="background:#f8f9fa;border-radius:0.5rem;">
+            <div class="d-flex gap-2 flex-wrap align-items-end">
+              <div>
+                <label for="new-year-label" class="form-label small">Année</label>
+                <input type="text" id="new-year-label" class="form-control form-control-sm" v-model="newYearLabel"
+                  placeholder="ex: 2026/2027" style="width:150px;">
+              </div>
+              <button class="btn btn-success btn-sm" v-on:click="createYear()">Créer</button>
+              <button class="btn btn-secondary btn-sm" v-on:click="showCreateYear = false">Annuler</button>
+            </div>
+          </div>
+          <div v-if="!config.years || config.years.length === 0" class="empty-state">Aucune année scolaire configurée
+          </div>
+          <div v-for="(year, yi) in config.years" :key="yi" class="emploi-row">
+            <span class="badge-year" :class="{active: year.isCurrent}">
+              {{year.isCurrent ? '✓ ' : ''}}{{year.label}}
+            </span>
+            <span class="text-muted" style="font-size:0.85rem;">
+              {{year.classes.length}} classes | {{year.emploi.length}} créneaux
+            </span>
+            <div class="ml-auto">
+              <button class="btn btn-outline-primary btn-sm" v-if="!year.isCurrent"
+                v-on:click="setCurrentYear(year.label)">Définir courante</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ CLASSES ============ -->
+      <div class="section-card" v-if="selectedYear">
+        <div class="card-title d-flex justify-content-between align-items-center">
+          <span>🏫 Classes - {{selectedYear.label}}</span>
+          <button class="btn btn-primary btn-sm" v-on:click="openAddClassForm()">+ Ajouter</button>
+        </div>
+        <div class="card-body">
+
+          <!-- Liste des classes -->
+          <div v-for="(cls, ci) in selectedYear.classes" :key="ci"
+            v-if="!(showEditClassForm && editingClassIndex === ci)" class="emploi-row">
+            <strong>{{cls}}</strong>
+            <span class="text-muted" v-if="selectedYear.classesDisplay[cls]">→
+              {{selectedYear.classesDisplay[cls]}}</span>
+            <div class="ml-auto d-flex" style="gap:4px;">
+              <button class="btn btn-outline-secondary btn-sm" v-on:click="openEditClassForm(ci)">✏️</button>
+              <button class="btn btn-danger btn-sm" v-on:click="removeClass(ci)"
+                :disabled="selectedYear.classes.length <= 1">🗑️</button>
+            </div>
+          </div>
+
+          <!-- Formulaire édition classe -->
+          <div v-if="showEditClassForm" class="mt-2 p-3"
+            style="background:#fff8e1;border-radius:0.5rem;border:2px solid #fdcb6e;">
+            <h6 class="mb-2" style="color:#e17055;">Modifier la classe</h6>
+            <div class="row">
+              <div class="col-sm-5 form-group mb-2">
+                <label>Nom court</label>
+                <input type="text" class="form-control form-control-sm" v-model="editClassData.name">
+              </div>
+              <div class="col-sm-5 form-group mb-2">
+                <label>Affichage</label>
+                <input type="text" class="form-control form-control-sm" v-model="editClassData.display">
+              </div>
+              <div class="col-sm-2 form-group mb-2 d-flex align-items-end" style="gap:4px;">
+                <button class="btn btn-success btn-sm" v-on:click="confirmEditClass()">✔️</button>
+                <button class="btn btn-secondary btn-sm" v-on:click="cancelEditClass()">✖️</button>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="!selectedYear.classes.length" class="empty-state">Aucune classe. Ajoutez-en une !</div>
+
+          <!-- Formulaire ajout classe -->
+          <div v-if="showAddClassForm" class="mt-3 p-3"
+            style="background:#f0f4ff;border-radius:0.5rem;border:2px solid #6c5ce7;">
+            <h6 class="mb-2" style="color:#6c5ce7;">Ajouter une classe</h6>
+            <div class="row">
+              <div class="col-sm-5 form-group mb-2">
+                <label>Nom court</label>
+                <input type="text" class="form-control form-control-sm" v-model="newClassData.name"
+                  placeholder="ex: 5T1" @keyup.enter="confirmAddClass()">
+              </div>
+              <div class="col-sm-5 form-group mb-2">
+                <label>Affichage</label>
+                <input type="text" class="form-control form-control-sm" v-model="newClassData.display"
+                  placeholder="ex: 5e Technique" @keyup.enter="confirmAddClass()">
+              </div>
+              <div class="col-sm-2 form-group mb-2 d-flex align-items-end" style="gap:4px;">
+                <button class="btn btn-success btn-sm" v-on:click="confirmAddClass()">Ajouter</button>
+                <button class="btn btn-secondary btn-sm" v-on:click="cancelAddClass()">Annuler</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ============ EMPLOI DU TEMPS ============ -->
+      <div class="section-card" v-if="selectedYear && showEmploiEditor">
+        <div class="card-title d-flex justify-content-between align-items-center">
+          <span>⏰ Emploi du temps - {{selectedYear.label}}</span>
+          <button class="btn btn-success btn-sm" v-on:click="addEmploiSlot()">+ Ajouter créneau</button>
+        </div>
+        <div class="card-body">
+
+          <!-- Liste des créneaux -->
+          <div v-for="(slot, si) in selectedYear.emploi" :key="si">
+
+            <!-- Ligne normale (hors édition) -->
+            <div v-if="editingSlotIndex !== si" class="emploi-row">
+              <strong>{{jourNames[slot.day]}}</strong>
+              <span>{{slot.startTime}} → {{slot.endTime}}</span>
+              <span class="badge badge-primary">{{slot.classe}}</span>
+              <span class="text-muted" v-if="slot.groupe">({{slot.groupe}})</span>
+              <div class="ml-auto d-flex" style="gap:4px;">
+                <button class="btn btn-outline-secondary btn-sm" v-on:click="openEditSlot(si)">✏️</button>
+                <button class="btn btn-danger btn-sm" v-on:click="removeEmploiSlot(si)">🗑️</button>
+              </div>
+            </div>
+
+            <!-- Ligne édition -->
+            <div v-if="editingSlotIndex === si" class="my-2"
+              style="background:#fff8e1;border-radius:0.5rem;border:2px solid #fdcb6e;padding:0.75rem;">
+              <h6 class="mb-2" style="color:#e17055">Modifier le créneau</h6>
+
+              <div class="row">
+                <div class="col-sm-2">
+                  <select class="form-control form-control-sm" v-model="editSlotData.day">
+                    <option v-for="(name, idx) in jourNames" :key="idx" :value="idx">{{name}}</option>
+                  </select>
+                </div>
+                <div class="col-sm-2">
+                  <input type="text" class="form-control form-control-sm" v-model="editSlotData.startTime"
+                    placeholder="08:00">
+                </div>
+                <div class="col-sm-2">
+                  <input type="text" class="form-control form-control-sm" v-model="editSlotData.endTime"
+                    placeholder="12:00">
+                </div>
+                <div class="col-sm-3">
+                  <select class="form-control form-control-sm" v-model="editSlotData.classe">
+                    <option v-for="cls in selectedYear.classes" :key="cls" :value="cls">{{cls}}</option>
+                  </select>
+                </div>
+                <div class="col-sm-3">
+                  <select class="form-control form-control-sm" v-model="editSlotData.groupe">
+                    <option v-for="g in selectedYear.groupes" :key="g" :value="g">{{g}}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="my-2">
+                <button class="btn btn-success" v-on:click="confirmEditSlot()">Modifier</button>
+                <button class="btn btn-secondary" v-on:click="cancelEditSlot()">Annuler</button>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="!selectedYear.emploi.length" class="empty-state">Aucun créneau. Ajoutez-en un !</div>
+          <button class="btn btn-success mt-3" v-on:click="saveEmploi()">💾 Enregistrer l'emploi du temps</button>
+
+          <!-- Formulaire ajout créneau -->
+          <div v-if="showAddSlotForm" class="mt-3 p-3"
+            style="background:#f0fff4;border-radius:0.5rem;border:2px solid #00b894;">
+            <h6 class="mb-2" style="color:#00b894;">Ajouter un créneau</h6>
+            <div class="row">
+              <div class="col-sm-2">
+                <label class="small">Jour</label>
+                <select class="form-control form-control-sm" v-model="newSlot.day">
+                  <option v-for="(name, idx) in jourNames" :key="idx" :value="idx">{{name}}</option>
+                </select>
+              </div>
+              <div class="col-sm-2">
+                <label class="small">Début</label>
+                <input type="text" class="form-control form-control-sm" v-model="newSlot.startTime"
+                  placeholder="08:00">
+              </div>
+              <div class="col-sm-2">
+                <label class="small">Fin</label>
+                <input type="text" class="form-control form-control-sm" v-model="newSlot.endTime"
+                  placeholder="12:00">
+              </div>
+              <div class="col-sm-3">
+                <label class="small">Classe</label>
+                <select class="form-control form-control-sm" v-model="newSlot.classe">
+                  <option v-for="cls in selectedYear.classes" :key="cls" :value="cls">{{cls}}</option>
+                </select>
+              </div>
+              <div class="col-sm-3">
+                <label class="small">Groupe</label>
+                <select class="form-control form-control-sm" v-model="newSlot.groupe">
+                  <option v-for="g in selectedYear.groupes" :key="g" :value="g">{{g}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="my-2">
+              <button class="btn btn-success btn-sm" v-on:click="confirmAddSlot()">Ajouter</button>
+              <button class="btn btn-secondary btn-sm" v-on:click="cancelAddSlot()">Annuler</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script src="scripts/vue.min.js" defer></script>
+  <script src="scripts/entities.js" defer></script>
+  <script src="scripts/gestion.js" defer></script>
+</body>
+
+</html>

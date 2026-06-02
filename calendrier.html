@@ -21,8 +21,12 @@
           Année scolaire {{annee_scolaire}}
         </small>
       </h1>
-      <div class="d-flex" style="gap:0.5rem;">
-        <a href="emploi_temps.html" class="btn btn-primary btn-sm">📅 Emploi du temps</a>
+      <div class="d-flex align-items-center" style="gap:0.5rem;">
+        <select class="form-control form-control-sm" v-model="selectedYear" v-on:change="changeYear()"
+          style="width:auto;min-width:120px;" v-if="years.length > 0">
+          <option v-for="y in years" :key="y.label" :value="y.label">{{y.label}}</option>
+        </select>
+        <a href="gestion.html" class="btn btn-outline-secondary btn-sm">⚙️ Gestion</a>
         <a href="index.html" class="btn btn-secondary btn-sm">&larr; Retour</a>
       </div>
     </div>
@@ -32,7 +36,6 @@
       <p class="text-muted">Chargement du calendrier...</p>
     </div>
 
-    <!-- 2 months per row using Bootstrap grid -->
     <div v-if="!loading">
       <div v-for="(pair, pi) in monthPairs" :key="'pair' + pi" class="row mb-4">
         <div v-for="(month, mi) in pair" :key="'m' + pi + '-' + mi" class="col-sm-6 mb-3 mb-sm-0">
@@ -40,9 +43,7 @@
             <div class="cal-card-header">{{month.name}}</div>
             <table class="cal-table table table-borderless mb-0">
               <thead>
-                <tr>
-                  <th v-for="d in ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']" :key="d">{{d}}</th>
-                </tr>
+                <tr><th v-for="d in ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']" :key="d">{{d}}</th></tr>
               </thead>
               <tbody>
                 <tr v-for="(week, wi) in month.weeks" :key="wi">

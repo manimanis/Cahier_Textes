@@ -5,10 +5,21 @@ class Seances
     private $_filename;
     private $_data;
 
-    public function __construct($classe)
+    /**
+     * @param string $classeOrFilename Nom de classe simple (2TI1) ou fichier complet (2025_2026_2TI1.json)
+     */
+    public function __construct($classeOrFilename)
     {
-        $this->_classe = $classe;
-        $this->_filename = JSON_FOLDER . "/" . $classe . ".json";
+        // Si le paramètre contient un point, c'est un nom de fichier complet
+        if (strpos($classeOrFilename, '.') !== false) {
+            $this->_filename = JSON_FOLDER . "/" . $classeOrFilename;
+            // Extraire le nom de classe du fichier
+            $parts = explode('_', basename($classeOrFilename, '.json'));
+            $this->_classe = end($parts);
+        } else {
+            $this->_classe = $classeOrFilename;
+            $this->_filename = JSON_FOLDER . "/" . $classeOrFilename . ".json";
+        }
         $this->load();
     }
 
@@ -23,7 +34,7 @@ class Seances
 
     public function save()
     {
-        file_put_contents($this->_filename, json_encode($this->_data));
+        file_put_contents($this->_filename, json_encode($this->_data, JSON_UNESCAPED_UNICODE));
     }
 
     public function find($record) {
