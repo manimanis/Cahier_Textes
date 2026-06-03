@@ -1,4 +1,18 @@
 {
+    "auth": {
+        "password_hash": "$2y$10$.XeBmyMBrBblxu..HtLp0.OzcBi3OqpX4sJcESsOVSeZV\/9PrF1ou"
+    },
+    "enseignant": {
+        "id": "0077143288",
+        "name": "MANI",
+        "firstName": "Mohamed Anis",
+        "specialite": "Informatique",
+        "matieres": [
+            "Informatique",
+            "STI",
+            "Programmation"
+        ]
+    },
     "years": [
         {
             "label": "2024\/2025",
@@ -134,7 +148,7 @@
                     "groupe": "Toute la classe"
                 }
             ],
-            "isCurrent": false
+            "isCurrent": true
         },
         {
             "label": "2026\/2027",
@@ -149,8 +163,8 @@
                 "3T1": "3<sup>e<\/sup> Techniques",
                 "4T1": "4<sup>e<\/sup> Techniques",
                 "others": "Autres",
-                "2INFO1": "2<sup>e<\/sup> INFO 1",
-                "3T2": "3<sup>e<\/sup> Techniques 2"
+                "2INFO1": "2INFO1",
+                "3T2": "3T2"
             },
             "groupes": [
                 "Toute la classe",
@@ -180,7 +194,7 @@
                     "groupe": "Toute la classe"
                 }
             ],
-            "isCurrent": true
+            "isCurrent": false
         }
     ]
 }

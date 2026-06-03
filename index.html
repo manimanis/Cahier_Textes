@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 
 <head>
   <meta charset="UTF-8">
@@ -8,13 +8,15 @@
   <link rel="stylesheet" href="styles/bootstrap.min.css">
   <link rel="stylesheet" href="styles/fonts.css">
   <link rel="stylesheet" href="styles/style.css">
+  <link rel="stylesheet" href="styles/jodit.min.css">
 </head>
 
 <body>
   <main id="app">
+    <!-- ===== PAGE D'ACCUEIL : Liste des classes ===== -->
     <article class="container" v-if="selectedClasse == ''">
       <h1>Cahier de textes</h1>
-      
+
       <!-- Navigation links + year selector -->
       <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap" style="gap:0.5rem;">
         <div class="d-flex" style="gap:0.5rem;">
@@ -36,7 +38,48 @@
       </div>
     </article>
 
+    <!-- ===== PAGE CLASSE : Séances + mode édition ===== -->
     <article class="container" v-if="selectedClasse != ''">
+      <!-- Year selector (top bar) -->
+      <div class="d-flex justify-content-end align-items-center mb-2" style="gap:0.5rem;" v-if="connected">
+        <select class="form-control form-control-sm" v-model="selectedYear" v-on:change="changeYear()"
+          style="width:auto;min-width:130px;" v-if="years.length > 0">
+          <option v-for="y in years" :key="y.label" :value="y.label">{{y.label}}</option>
+        </select>
+        <a href="gestion.html" class="btn btn-outline-secondary btn-sm">⚙️ Gestion</a>
+      </div>
+
+      <!-- Login form (when not connected and trying to edit) -->
+      <div v-if="!connected && showLoginForm" class="row justify-content-center my-3">
+        <div class="col-sm-6">
+          <div class="card">
+            <div class="card-header">
+              <h3>Connexion</h3>
+            </div>
+            <div class="card-body">
+              <div class="my-3" v-if="alerts.length > 0">
+                <div v-for="alert in alerts" class="alert" v-bind:class="'alert-'+alert.alType" role="alert">
+                  {{alert.alMsg}}
+                </div>
+              </div>
+              <form v-on:submit.prevent="onLoginClicked()">
+                <div class="form-group">
+                  <label for="login-pseudo">Nom d'utilisateur</label>
+                  <input type="text" id="login-pseudo" class="form-control" v-model="loginPseudo" required
+                    autocomplete="username">
+                </div>
+                <div class="form-group">
+                  <label for="login-password">Mot de passe</label>
+                  <input type="password" id="login-password" class="form-control" v-model="loginPassword" required
+                    autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <h1>Classe {{selectedClasse}}</h1>
       <div class="row">
         <div class="col-sm-6 annee-scolaire">{{annee_scolaire}}</div>
@@ -47,15 +90,238 @@
         <a href="#" v-on:click.prevent="onClasseChanged('')">&larr; Liste des classes</a>
       </div>
 
-      <section v-for="seance, idx in seances[selectedClasse]">
-        <h2><small>Séance {{seance.index}} : </small>{{seance.titre}}</h2>
-        <div class="row">
-          <div class="col-sm-3 date">{{formatDate(seance.date)}}</div>
-          <div class="col-sm-3 heure">{{seance.debut}} &rarr; {{seance.fin}}</div>
-          <div class="col-sm-6 groupe">{{seance.groupe}}</div>
+      <!-- Loading indicator -->
+      <div class="my-3 text-center" v-if="loading">
+        <div class="spinner-border text-primary" role="status">
+          <span class="sr-only">Chargement...</span>
         </div>
-        <div class="remarque" v-if="seance.remarque" v-html="seance.remarque"></div>
-        <div class="travail" v-html="seance.travail"></div>
+        <p>Chargement des données...</p>
+      </div>
+
+      <!-- Alert messages -->
+      <div class="my-3" v-if="!loading && alerts.length > 0">
+        <div v-for="alert in alerts" class="alert" v-bind:class="'alert-'+alert.alType" role="alert">
+          {{alert.alMsg}}
+        </div>
+      </div>
+
+      <!-- Séance count -->
+      <div class="my-3 alert alert-secondary" v-if="!loading && filteredSeances.length != seances.length">
+        {{filteredSeances.length}} séances parmi {{seances.length}}
+      </div>
+      <div class="my-3 alert alert-secondary" v-else-if="!loading">
+        {{seances.length}} séances
+      </div>
+
+      <!-- Advanced filters -->
+      <div v-if="connected && seances.length > 0" class="row mb-3" style="gap:8px 0;">
+        <div class="col-sm-4">
+          <input type="text" class="form-control form-control-sm" v-model="searchQuery" placeholder="🔍 Rechercher dans les séances..." v-on:input="applyAdvancedFilters()">
+        </div>
+        <div class="col-sm-3">
+          <select class="form-control form-control-sm" v-model="filterGroupe" v-on:change="applyAdvancedFilters()">
+            <option value="">👥 Tous les groupes</option>
+            <option v-for="g in groupes" v-bind:key="g" v-bind:value="g">{{g}}</option>
+          </select>
+        </div>
+        <div class="col-sm-2">
+          <select class="form-control form-control-sm" v-model="sortOrder" v-on:change="applyAdvancedFilters()">
+            <option value="desc">⬇️ Plus récent</option>
+            <option value="asc">⬆️ Plus ancien</option>
+          </select>
+        </div>
+        <div class="col-sm-3 d-flex align-items-center">
+          <button class="btn btn-success btn-sm" v-on:click.prevent="onExportCsvClicked()" v-if="filteredSeances.length > 0">
+            📄 Export CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Date filters -->
+      <form v-if="connected && debut != ''">
+        <div class="row">
+          <div class="col-sm-4">
+            <label for="debut-filter">Date de début</label>
+            <select name="debut" id="debut-filter" class="form-control" v-model="debut"
+              v-on:change="onIntervalChanged('debut')">
+              <option v-for="date in dates" v-bind:value="date">{{formatDate(date)}}</option>
+            </select>
+          </div>
+          <div class="col-sm-4">
+            <label for="fin-filter">Date de fin</label>
+            <select name="fin" id="fin-filter" class="form-control" v-model="fin"
+              v-on:change="onIntervalChanged('fin')">
+              <option v-for="date in dates" v-bind:value="date">{{formatDate(date)}}</option>
+            </select>
+          </div>
+        </div>
+      </form>
+
+      <!-- Action buttons (when connected, not editing, list mode) -->
+      <div class="my-2 d-flex" style="gap:0.5rem;" v-if="!loading && connected && selectedSeance == -1 && mode == 'list'">
+        <button class="btn btn-primary" v-on:click.prevent="onNewSeanceclicked()">Nouvelle séance</button>
+        <button class="btn btn-success" v-on:click.prevent="onExportPdfClicked()">📄 Export PDF</button>
+        <button class="btn btn-secondary ml-2" v-on:click.prevent="onLogoutClicked()">Déconnexion</button>
+      </div>
+
+      <!-- Séances list + edit/delete forms -->
+      <template v-if="!loading && mode != 'new'">
+        <section v-for="seance, idx in filteredSeances">
+          <!-- Read-only view -->
+          <div v-if="selectedSeance != idx">
+            <h2><small>Séance {{seance.index}} : </small> {{seance.titre}}</h2>
+            <div class="row">
+              <div class="col-sm-3 date">{{formatDate(seance.date)}}</div>
+              <div class="col-sm-3 heure">{{seance.debut}} &rarr; {{seance.fin}}</div>
+              <div class="col-sm-6 groupe">{{seance.groupe}}</div>
+            </div>
+            <div class="remarque" v-if="seance.remarque">{{seance.remarque}}</div>
+            <div class="travail" v-html="seance.travail"></div>
+          </div>
+
+          <!-- Edit form -->
+          <div v-if="selectedSeance == idx && mode == 'edit'">
+            <form id="form-seance-edit" method="post">
+              <div class="my-2 row">
+                <div class="col-sm-4">
+                  <label for="edit-date-seance">Date de la séance</label>
+                  <input type="date" id="edit-date-seance" class="form-control" v-model="seance.date" required>
+                </div>
+                <div class="col-sm-4">
+                  <label for="edit-debut-seance">Heure départ</label>
+                  <input type="text" id="edit-debut-seance" class="form-control" min="08:00" max="17:00" step="1800"
+                    v-model="seance.debut" required>
+                </div>
+                <div class="col-sm-4">
+                  <label for="edit-fin-seance">Heure fin</label>
+                  <input type="text" id="edit-fin-seance" class="form-control" min="08:30" max="18:00" step="1800"
+                    v-model="seance.fin" required>
+                </div>
+              </div>
+              <div class="my-2 row">
+                <div class="col-sm-6">
+                  <label for="edit-classe-seance">Classe</label>
+                  <input type="text" id="edit-classe-seance" class="form-control" placeholder="Classe"
+                    list="edit-liste-classes" v-model="seance.classe" readonly>
+                  <datalist id="edit-liste-classes">
+                    <option v-for="cl in classesList">{{cl}}</option>
+                  </datalist>
+                </div>
+                <div class="col-sm-6">
+                  <label for="edit-groupe-seance">Groupe d'élèves</label>
+                  <select id="edit-groupe-seance" class="form-control" v-model="seance.groupe" required>
+                    <option v-for="groupe in groupes">{{groupe}}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="my-2">
+                <label for="edit-titre-seance">Titre séance</label>
+                <input id="edit-titre-seance" type="text" class="form-control" placeholder="Titre de la séance"
+                  v-model="seance.titre" required>
+              </div>
+              <div class="my-2">
+                <label for="edit-travail-seance">Travail réalisé</label>
+                <textarea id="edit-travail-seance" cols="30" rows="5" class="form-control"
+                  placeholder="Travail réalisé pendant la séance" v-model="seance.travail" required></textarea>
+              </div>
+              <div class="my-2">
+                <label for="edit-remarque-seance">Remarques</label>
+                <textarea id="edit-remarque-seance" cols="30" rows="2" class="form-control"
+                  placeholder="Indiquer vos remarques" v-model="seance.remarque"></textarea>
+              </div>
+              <div class="my-2">
+                <button class="btn btn-success" v-on:click.prevent="onModifySeanceClicked()">Modifier</button>
+                <button class="btn btn-secondary" v-on:click.prevent="onCancelClicked()">Annuler</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Delete confirmation -->
+          <div v-if="selectedSeance == idx && mode == 'delete'">
+            <h2>{{seance.titre}}</h2>
+            <div class="row">
+              <div class="col-sm-3 date">{{formatDate(seance.date)}}</div>
+              <div class="col-sm-3 heure">{{seance.debut}} &rarr; {{seance.fin}}</div>
+              <div class="col-sm-6 groupe">{{seance.groupe}}</div>
+            </div>
+            <div class="remarque" v-if="seance.remarque">{{seance.remarque}}</div>
+            <div class="travail" v-html="seance.travail"></div>
+            <div class="my-2 alert alert-danger">
+              Voulez-vous vraiment supprimer cette séance ?
+            </div>
+            <button class="btn btn-secondary" v-on:click.prevent="onCancelClicked()">Annuler</button>
+            <button class="btn btn-danger" v-on:click.prevent="onDeleteSeanceClicked()">Supprimer</button>
+          </div>
+
+          <!-- Edit/Delete buttons per seance -->
+          <div class="my-2" v-if="mode == 'list' && connected">
+            <button class="btn btn-primary" v-on:click.prevent="onEditSeanceClicked(idx)">Modifier</button>
+            <button class="btn btn-danger" v-on:click.prevent="onConfirmDeleteSeanceClicked(idx)">Supprimer</button>
+          </div>
+        </section>
+      </template>
+
+      <!-- New seance form -->
+      <section v-if="!loading && mode == 'new'">
+        <div class="my-3" v-if="alerts.length > 0">
+          <div v-for="alert in alerts" class="alert" v-bind:class="'alert-'+alert.alType" role="alert">
+            {{alert.alMsg}}
+          </div>
+        </div>
+        <form id="form-seance-new" method="post">
+          <div class="my-2 row">
+            <div class="col-sm-4">
+              <label for="new-date-seance">Date de la séance</label>
+              <input type="date" id="new-date-seance" class="form-control" v-model="localSeance.date"
+                v-on:change="onDateChanged()" required>
+            </div>
+            <div class="col-sm-4">
+              <label for="new-debut-seance">Heure départ</label>
+              <input type="text" id="new-debut-seance" class="form-control" min="08:00" max="17:00" step="1800"
+                v-model="localSeance.debut" required>
+            </div>
+            <div class="col-sm-4">
+              <label for="new-fin-seance">Heure fin</label>
+              <input type="text" id="new-fin-seance" class="form-control" min="08:30" max="18:00" step="1800"
+                v-model="localSeance.fin" required>
+            </div>
+          </div>
+          <div class="my-2 row">
+            <div class="col-sm-6">
+              <label for="new-classe-seance">Classe</label>
+              <input type="text" id="new-classe-seance" class="form-control" placeholder="Classe"
+                list="new-liste-classes" v-model="localSeance.classe" required>
+              <datalist id="new-liste-classes">
+                <option v-for="cl in classesList">{{cl}}</option>
+              </datalist>
+            </div>
+            <div class="col-sm-6">
+              <label for="new-groupe-seance">Groupe d'élèves</label>
+              <select id="new-groupe-seance" class="form-control" v-model="localSeance.groupe" required>
+                <option v-for="groupe in groupes">{{groupe}}</option>
+              </select>
+            </div>
+          </div>
+          <div class="my-2">
+            <label for="new-titre-seance">Titre séance</label>
+            <input id="new-titre-seance" type="text" class="form-control" placeholder="Titre de la séance"
+              v-model="localSeance.titre" required>
+          </div>
+          <div class="my-2">
+            <label for="new-travail-seance">Travail réalisé</label>
+            <textarea id="new-travail-seance" cols="30" rows="10" class="form-control"
+              placeholder="Travail réalisé pendant la séance" v-model="localSeance.travail" required></textarea>
+          </div>
+          <div class="my-2">
+            <label for="new-remarque-seance">Remarques</label>
+            <textarea id="new-remarque-seance" cols="30" rows="2" class="form-control"
+              placeholder="Indiquer vos remarques" v-model="localSeance.remarque"></textarea>
+          </div>
+          <div>
+            <button class="btn btn-primary" v-on:click.prevent="onInsertClicked()">Ajouter</button>
+            <button class="btn btn-secondary" v-on:click.prevent="onCancelClicked()">Annuler</button>
+          </div>
+        </form>
       </section>
     </article>
 
@@ -63,6 +329,7 @@
   <script src="scripts/jquery.min.js" defer></script>
   <script src="scripts/bootstrap.min.js" defer></script>
   <script src="scripts/vue.min.js" defer></script>
+  <script src="scripts/jodit.min.js" defer></script>
   <script src="scripts/entities.js" defer></script>
   <script src="scripts/app3.js" defer></script>
 </body>

@@ -41,21 +41,23 @@
         <div v-for="(month, mi) in pair" :key="'m' + pi + '-' + mi" class="col-sm-6 mb-3 mb-sm-0">
           <div class="cal-card">
             <div class="cal-card-header">{{month.name}}</div>
-            <table class="cal-table table table-borderless mb-0">
-              <thead>
-                <tr><th v-for="d in ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']" :key="d">{{d}}</th></tr>
-              </thead>
-              <tbody>
-                <tr v-for="(week, wi) in month.weeks" :key="wi">
-                  <td v-for="(day, di) in week" :key="di" :class="cellCls(day)">
-                    <template v-if="day">
-                      <div class="cal-day-num">{{day.date.getDate()}}</div>
-                      <div class="cal-day-obs" v-html="day.obs || '&nbsp;'"></div>
-                    </template>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="cal-table-wrap">
+              <table class="cal-table table table-borderless mb-0">
+                <thead>
+                  <tr><th v-for="d in ['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']" :key="d">{{d}}</th></tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(week, wi) in month.weeks" :key="wi">
+                    <td v-for="(day, di) in week" :key="di" :class="cellCls(day)">
+                      <template v-if="day">
+                        <div class="cal-day-num">{{day.date.getDate()}}</div>
+                        <div class="cal-day-obs" v-html="day.obs || '&nbsp;'"></div>
+                      </template>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

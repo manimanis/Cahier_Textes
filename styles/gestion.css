@@ -2,40 +2,112 @@
    GESTION - Administration Styles
    ======================================== */
 
+/* --- Base layout --- */
 .gestion-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   flex-wrap: wrap;
-  gap: 1rem;
+  gap: 0.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
 }
 
 .gestion-header h1 {
   margin: 0;
-  font-size: 2rem;
+  font-size: 1.5rem;
 }
 
+.header-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* --- Breadcrumb --- */
+.breadcrumb-g {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.breadcrumb-g .sep {
+  color: #adb5bd;
+}
+
+/* --- Modern Tabs --- */
+.nav-tabs-g {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 2px solid #dee2e6;
+  margin-bottom: 1.25rem;
+  overflow-x: auto;
+  flex-wrap: wrap;
+}
+
+.nav-tab-g {
+  padding: 0.6rem 1rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+
+.nav-tab-g:hover {
+  background: #f8f9fa;
+  color: #2c3e50;
+}
+
+.nav-tab-g.active {
+  color: #2980b9;
+  border-bottom-color: #2980b9;
+  font-weight: 600;
+}
+
+.nav-tab-g .badge {
+  margin-left: 0.35rem;
+  font-size: 0.7rem;
+}
+
+/* --- Section Card --- */
 .section-card {
   background: #fff;
   border-radius: 0.75rem;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   overflow: hidden;
 }
 
 .section-card .card-title {
   padding: 0.75rem 1.25rem;
   font-weight: 700;
-  font-size: 1.1rem;
+  font-size: 1rem;
   background: linear-gradient(135deg, #f8f9fa, #e9ecef);
   border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .section-card .card-body {
   padding: 1.25rem;
 }
 
+/* --- Emploi Row --- */
 .emploi-row {
   display: flex;
   gap: 0.5rem;
@@ -49,6 +121,7 @@
   background: #f8f9fa;
 }
 
+/* --- Badge Year --- */
 .badge-year {
   background: #6c5ce7;
   color: #fff;
@@ -62,15 +135,415 @@
   background: #00b894;
 }
 
-.empty-state {
+/* --- Dashboard Stats --- */
+.stat-card {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  padding: 1rem;
   text-align: center;
-  padding: 2rem;
-  color: #b2bec3;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 0.75rem;
 }
 
+.stat-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.stat-card .stat-icon {
+  font-size: 1.8rem;
+  margin-bottom: 0.4rem;
+}
+
+.stat-card .stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #2980b9;
+  display: block;
+}
+
+.stat-card .stat-label {
+  color: #6c757d;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- Tab Content Animation --- */
+.tab-fade {
+  animation: tabFadeIn 0.3s ease-out;
+}
+
+@keyframes tabFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Empty State --- */
+.empty-state {
+  text-align: center;
+  padding: 1.5rem;
+  color: #adb5bd;
+}
+
+/* --- Responsive --- */
 @media (max-width: 768px) {
+  .gestion-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .nav-tab-g {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+  }
+  .stat-card {
+    padding: 0.75rem;
+  }
+  .stat-card .stat-value {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 576px) {
   .emploi-row {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/* ========================================
+   DARK MODE - appliqué à toute la page
+   ======================================== */
+body.dark-mode {
+  background: #1a1d23 !important;
+  color: #e4e6eb !important;
+}
+
+/* Titres */
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3 {
+  color: #f0f2f5 !important;
+}
+
+body.dark-mode h1::before {
+  color: #888 !important;
+}
+
+body.dark-mode h2 {
+  border-left-color: #4da3ff !important;
+}
+
+/* Cartes & sections */
+body.dark-mode .section-card,
+body.dark-mode .card,
+body.dark-mode .stat-card,
+body.dark-mode section {
+  background: #25282e !important;
+  border-color: #34373d !important;
+  color: #e4e6eb !important;
+}
+
+body.dark-mode .section-card .card-title {
+  background: #2c2f35 !important;
+  border-bottom-color: #34373d !important;
+  color: #f0f2f5 !important;
+}
+
+/* Formulaires */
+body.dark-mode .form-control {
+  background-color: #2a2d33 !important;
+  color: #e4e6eb !important;
+  border-color: #3e4249 !important;
+}
+
+body.dark-mode .form-control:focus {
+  border-color: #4da3ff !important;
+  box-shadow: 0 0 0 0.2rem rgba(77,163,255,0.15) !important;
+}
+
+body.dark-mode label {
+  color: #ccc !important;
+}
+
+body.dark-mode select.form-control {
+  background-color: #2a2d33 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23aaa' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
+}
+
+body.dark-mode textarea.form-control {
+  background-color: #2a2d33 !important;
+  color: #e4e6eb !important;
+  border-color: #3e4249 !important;
+}
+
+/* Alertes */
+body.dark-mode .alert-secondary {
+  background: #2a2d33 !important;
+  border-color: #34373d !important;
+  color: #e4e6eb !important;
+}
+
+body.dark-mode .alert-info {
+  background: #1a3a5c !important;
+  border-color: #2d6aa0 !important;
+  color: #a8d8ff !important;
+}
+
+body.dark-mode .alert-danger {
+  background: #3c1c1c !important;
+  border-color: #8b2020 !important;
+}
+
+body.dark-mode .alert-success {
+  background: #1c3c1c !important;
+  border-color: #208b20 !important;
+}
+
+/* Headers */
+body.dark-mode .gestion-header {
+  border-bottom-color: #34373d !important;
+}
+
+body.dark-mode .section-card .card-title {
+  background: linear-gradient(135deg, #2c2f35, #34373d) !important;
+}
+
+/* Emploi row */
+body.dark-mode .emploi-row {
+  background: #25282e !important;
+  border-bottom-color: #34373d !important;
+  color: #e4e6eb !important;
+}
+
+body.dark-mode .emploi-row:hover {
+  background: #2a2d33 !important;
+}
+
+/* Badge */
+body.dark-mode .badge-year {
+  background: #3b6cb5 !important;
+}
+
+body.dark-mode .badge-year.active {
+  background: #1a8b4e !important;
+}
+
+body.dark-mode .badge {
+  background: #3e4249 !important;
+  color: #ccc !important;
+}
+
+body.dark-mode .badge-primary {
+  background: #2d7dd2 !important;
+}
+
+/* Tabs */
+body.dark-mode .nav-tabs-g {
+  border-bottom-color: #34373d !important;
+}
+
+body.dark-mode .nav-tab-g {
+  color: #aaa !important;
+}
+
+body.dark-mode .nav-tab-g:hover {
+  background: #2a2d33 !important;
+  color: #e4e6eb !important;
+}
+
+body.dark-mode .nav-tab-g.active {
+  color: #4da3ff !important;
+  border-bottom-color: #4da3ff !important;
+}
+
+/* Breadcrumb */
+body.dark-mode .breadcrumb-g {
+  background: #25282e !important;
+  border-bottom-color: #34373d !important;
+}
+
+body.dark-mode .breadcrumb-g .sep {
+  color: #555 !important;
+}
+
+/* Dashboard Stats */
+body.dark-mode .stat-card {
+  background: #25282e !important;
+  border-color: #34373d !important;
+}
+
+body.dark-mode .stat-card .stat-value {
+  color: #4da3ff !important;
+}
+
+body.dark-mode .stat-card .stat-label {
+  color: #888 !important;
+}
+
+/* Textes */
+body.dark-mode .text-muted {
+  color: #999 !important;
+}
+
+body.dark-mode strong {
+  color: #e4e6eb !important;
+}
+
+/* Lien */
+body.dark-mode a {
+  color: #4da3ff !important;
+}
+
+/* Spinner */
+body.dark-mode .spinner-border {
+  color: #4da3ff !important;
+}
+
+/* Empty state */
+body.dark-mode .empty-state {
+  color: #666 !important;
+}
+
+/* Bouton Dark Mode */
+body.dark-mode .btn-dark {
+  background: #f8f9fa !important;
+  color: #222 !important;
+  border-color: #ccc !important;
+}
+
+body.dark-mode .btn-light {
+  background: #444 !important;
+  color: #eee !important;
+  border-color: #666 !important;
+}
+
+/* Cards login */
+body.dark-mode .card-header {
+  background: #2d7dd2 !important;
+}
+
+body.dark-mode .card-body {
+  background: #25282e !important;
+  color: #e4e6eb !important;
+}
+
+/* Formulaire édition (fond coloré) */
+body.dark-mode [style*="background:#f8f9fa"],
+body.dark-mode [style*="background:#fff8e1"],
+body.dark-mode [style*="background:#f0f4ff"],
+body.dark-mode [style*="background:#f0fff4"] {
+  background: #2c2f35 !important;
+}
+
+/* Transition globale */
+body {
+  transition: background-color 0.3s, color 0.3s;
+}
+
+section {
+  transition: box-shadow 0.3s ease, transform 0.2s ease, background-color 0.3s;
+}
+
+/* --- Edit / Add form panels --- */
+.form-panel {
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-top: 0.5rem;
+  border-width: 2px;
+  border-style: solid;
+}
+
+.form-panel-edit {
+  background: #fff8e1;
+  border-color: #fdcb6e;
+}
+
+.form-panel-edit h6 {
+  color: #e17055;
+}
+
+.form-panel-add {
+  background: #f0f4ff;
+  border-color: #6c5ce7;
+}
+
+.form-panel-add h6 {
+  color: #6c5ce7;
+}
+
+.form-panel-slot {
+  background: #f0fff4;
+  border-color: #00b894;
+}
+
+.form-panel-slot h6 {
+  color: #00b894;
+}
+
+.form-panel-create {
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+}
+
+/* Small year badge info */
+.badge-info {
+  font-size: 0.85rem;
+}
+
+/* Clickable row */
+.clickable-row {
+  cursor: pointer;
+}
+
+/* Tableau de bord - info prof */
+body.dark-mode .section-card hr {
+  border-color: #34373d !important;
+}
+
+/* Dark mode panels */
+body.dark-mode .form-panel-edit {
+  background: #332f1a !important;
+  border-color: #8a7535 !important;
+}
+
+body.dark-mode .form-panel-edit h6 {
+  color: #e8a07a !important;
+}
+
+body.dark-mode .form-panel-add {
+  background: #1e2a3e !important;
+  border-color: #5a5cd7 !important;
+}
+
+body.dark-mode .form-panel-add h6 {
+  color: #7c7df5 !important;
+}
+
+body.dark-mode .form-panel-slot {
+  background: #1a3329 !important;
+  border-color: #0d9b6e !important;
+}
+
+body.dark-mode .form-panel-slot h6 {
+  color: #1fbf7a !important;
+}
+
+body.dark-mode .form-panel-create {
+  background: #1e2228 !important;
+}
+
+body.dark-mode .card {
+  background: #25282e !important;
+  border-color: #34373d !important;
+}
+
+body.dark-mode .card-header {
+  background: linear-gradient(135deg, #1e2a3e, #2d3a52) !important;
+  color: #e4e6eb !important;
+}
+
+body.dark-mode .card-header h3 {
+  color: #e4e6eb !important;
 }

@@ -41,10 +41,28 @@
   text-transform: capitalize;
 }
 
+/* --- Table wrapper for mobile scroll --- */
+.cal-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cal-table-wrap::-webkit-scrollbar {
+  height: 6px;
+}
+.cal-table-wrap::-webkit-scrollbar-track {
+  background: #f0f0f5;
+}
+.cal-table-wrap::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
 /* --- Table --- */
 .cal-table {
   width: 100%;
   table-layout: fixed;
+  min-width: 480px; /* force scroll on small screens */
 }
 
 .cal-table th {

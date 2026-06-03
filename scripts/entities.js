@@ -61,6 +61,12 @@ function loadConfig(yearLabel) {
 
       yearsList = config.years || [];
 
+      // Charger les infos enseignant depuis config.json
+      if (config.enseignant) {
+        const e = config.enseignant;
+        enseignant = e.firstName + ' ' + e.name.toUpperCase() + ' (' + e.specialite + ')';
+      }
+
       if (year) {
         annee_scolaire = year.label;
         classes = year.classes || [];

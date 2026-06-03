@@ -3,7 +3,8 @@
 session_start();
 
 define("JSON_FOLDER", dirname(__FILE__)."/json");
-define("CLASSES", ["classe1", "classe2", "classe3", "classe4", "classe5"]);
+// CLASSES are now loaded dynamically from json/config.json via IndexController
+define("CLASSES", []);
 
 require_once 'config.inc.php';
 

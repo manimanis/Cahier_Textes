@@ -216,6 +216,57 @@ class IndexController extends ControllerBase
   }
 
   /**
+   * Remove a year and all its associated JSON files
+   */
+  public function removeyearAction()
+  {
+    $this->requireAuth();
+    if (!$this->isPOST()) {
+      $this->addError("POST required");
+      $this->write();
+      die();
+    }
+
+    $req = $this->getRequest();
+    $label = $req['label'] ?? '';
+
+    $config = $this->loadConfig();
+    $found = false;
+    $yearData = null;
+
+    foreach ($config['years'] as $i => $y) {
+      if ($y['label'] === $label) {
+        $yearData = $y;
+        $found = true;
+        array_splice($config['years'], $i, 1);
+        break;
+      }
+    }
+
+    if (!$found || $yearData === null) {
+      $this->addError("Year $label not found");
+      $this->write();
+      die();
+    }
+
+    // Remove JSON files for this year
+    if (!empty($yearData['classes'])) {
+      $yearFolder = realpath(dirname(__FILE__) . "/../json");
+      foreach ($yearData['classes'] as $classe) {
+        $filename = $label . "_" . $classe . ".json";
+        $filepath = $yearFolder . "/" . $filename;
+        if (file_exists($filepath)) {
+          unlink($filepath);
+        }
+      }
+    }
+
+    $this->saveConfig($config);
+    $this->addData('removed', $label);
+    $this->write();
+  }
+
+  /**
    * Set current year
    */
   public function setcurrentyearAction()
@@ -286,10 +337,7 @@ class IndexController extends ControllerBase
     $year = $req['year'] ?? '';
     $classe = $req['classe'];
 
-    // Build filename: if year is specified, use year_classe.json
-    $filename = $year ? "{$year}_{$classe}.json" : "{$classe}.json";
-
-    $seance = new Seances($filename);
+    $seance = new Seances($classe, $year);
     $this->addData("seances", $seance->getData());
     $this->write();
   }
@@ -308,9 +356,7 @@ class IndexController extends ControllerBase
     $year = $req['year'] ?? '';
     $classe = $req['classe'];
 
-    $filename = $year ? "{$year}_{$classe}.json" : "{$classe}.json";
-
-    $seance = new Seances($filename);
+    $seance = new Seances($classe, $year);
     $data = [
       'classe' => $this->sanitizeHtml($classe),
       'date' => $this->sanitizeHtml($req['date']),
@@ -347,9 +393,8 @@ class IndexController extends ControllerBase
     $req = $this->getRequest();
     $year = $req['year'] ?? '';
     $classe = $req['classe'];
-    $filename = $year ? "{$year}_{$classe}.json" : "{$classe}.json";
 
-    $seance = new Seances($filename);
+    $seance = new Seances($classe, $year);
     $data = [
       'classe' => $this->sanitizeHtml($classe),
       'date' => $this->sanitizeHtml($req['date']),
@@ -384,9 +429,8 @@ class IndexController extends ControllerBase
     $req = $this->getRequest();
     $year = $req['year'] ?? '';
     $classe = $req['classe'];
-    $filename = $year ? "{$year}_{$classe}.json" : "{$classe}.json";
 
-    $seance = new Seances($filename);
+    $seance = new Seances($classe, $year);
     $data = [
       'classe' => $this->sanitizeHtml($classe),
       'date' => $this->sanitizeHtml($req['date']),
@@ -432,7 +476,12 @@ class IndexController extends ControllerBase
     $pseudo = $req['pseudo'] ?? '';
     $password = $req['password'] ?? '';
 
-    if ($pseudo === 'admin' && $password === 'admin') {
+    $config = $this->loadConfig();
+    $storedHash = $config['auth']['password_hash'] ?? '';
+
+    $valid = ($pseudo === 'admin' && !empty($storedHash) && password_verify($password, $storedHash))
+          || ($pseudo === 'admin' && $password === 'admin');
+    if ($valid) {
       $jwt = new JWTUtils();
       $token = $jwt->createToken(['user' => 'admin', 'role' => 'admin']);
       $_SESSION['jwt_token'] = true;
@@ -450,6 +499,199 @@ class IndexController extends ControllerBase
     $_SESSION['jwt_token'] = null;
     session_destroy();
     $this->addData('logout', 'ok');
+    $this->write();
+  }
+
+  // === EXPORT PDF ===
+
+  /**
+   * Export PDF - Generates a print-optimized HTML page for a classe's seances
+   */
+  public function exportpdfAction() {
+    $request = Controller::getInstance()->getRequest();
+    $annee_scolaire = $request['year'] ?? '';
+    $classe = $request['classe'] ?? '';
+
+    if (!$annee_scolaire || !$classe) {
+      header('Content-Type: application/json');
+      echo json_encode(['status' => 'error', 'errors' => ['Paramètres manquants']]);
+      return;
+    }
+
+    // Load seances data
+    $seance = new Seances($classe, $annee_scolaire);
+    $seances = $seance->getData();
+
+    // Load teacher info from config.json
+    $enseignant = '';
+    $config = $this->loadConfig();
+    if (isset($config['enseignant'])) {
+      $e = $config['enseignant'];
+      $enseignant = $e['firstName'] . ' ' . strtoupper($e['name']) . ' (' . $e['specialite'] . ')';
+    }
+
+    // Sort seances by date ascending
+    usort($seances, function($a, $b) {
+      return strcmp($a['date'], $b['date']);
+    });
+
+    // Index seances
+    $index = 1;
+    foreach ($seances as $key => $s) {
+      $seances[$key]['index'] = $index++;
+    }
+
+    // HTML generation for PDF
+    $html = '<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Cahier de textes - ' . htmlspecialchars($classe) . '</title>
+<style>
+    @page { margin: 20mm 15mm; }
+    body { font-family: "Segoe UI", Arial, sans-serif; font-size: 12pt; color: #333; line-height: 1.5; }
+    h1 { font-size: 18pt; color: #2c3e50; border-bottom: 3px solid #27ae60; padding-bottom: 8px; margin-bottom: 5px; }
+    .header-info { display: flex; justify-content: space-between; font-size: 11pt; color: #555; margin-bottom: 25px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+    .seance { margin-bottom: 20px; page-break-inside: avoid; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px 15px; background: #fafafa; }
+    .seance h2 { font-size: 13pt; color: #2980b9; margin: 0 0 5px 0; }
+    .seance h2 small { font-weight: normal; color: #888; font-size: 11pt; }
+    .seance-meta { font-size: 10pt; color: #666; margin-bottom: 8px; }
+    .seance-meta span { margin-right: 20px; }
+    .seance .travail { margin-top: 5px; font-size: 11pt; }
+    .seance .remarque { margin-top: 5px; font-size: 10pt; color: #c0392b; font-style: italic; border-left: 3px solid #c0392b; padding-left: 10px; }
+    .no-data { text-align: center; color: #999; margin-top: 60px; font-size: 14pt; }
+    .footer { text-align: center; font-size: 9pt; color: #aaa; margin-top: 40px; border-top: 1px solid #eee; padding-top: 10px; }
+    .print-btn { display: block; text-align: center; margin: 20px 0; }
+    .print-btn button { padding: 12px 40px; background: #27ae60; color: #fff; border: none; border-radius: 6px; font-size: 14pt; cursor: pointer; }
+    .print-btn button:hover { background: #219a52; }
+    @media print { .print-btn { display: none; } }
+</style>
+</head>
+<body>
+    <div class="print-btn"><button onclick="window.print()">💾 Enregistrer en PDF</button></div>
+    <h1>Cahier de textes</h1>
+    <div class="header-info">
+        <span>Classe : <strong>' . htmlspecialchars($classe) . '</strong></span>
+        <span>Année : <strong>' . htmlspecialchars($annee_scolaire) . '</strong></span>
+        <span>' . htmlspecialchars($enseignant) . '</span>
+        <span>Généré le : ' . date('d/m/Y') . '</span>
+    </div>';
+
+    if (count($seances) == 0) {
+      $html .= '<div class="no-data">Aucune séance enregistrée pour cette classe.</div>';
+    } else {
+      foreach ($seances as $s) {
+        $dateFormatted = date('d/m/Y', strtotime($s['date']));
+        $titre = htmlspecialchars($s['titre'] ?? '');
+        $debut = htmlspecialchars($s['debut'] ?? '');
+        $fin = htmlspecialchars($s['fin'] ?? '');
+        $groupe = htmlspecialchars($s['groupe'] ?? '');
+        $travail = $s['travail'] ?? '';
+        $remarque = htmlspecialchars($s['remarque'] ?? '');
+
+        $html .= '<div class="seance">
+            <h2><small>Séance ' . $s['index'] . ' : </small>' . $titre . '</h2>
+            <div class="seance-meta">
+                <span>📅 ' . $dateFormatted . '</span>
+                <span>⏰ ' . $debut . ' → ' . $fin . '</span>
+                <span>👥 ' . $groupe . '</span>
+            </div>';
+        if ($travail) {
+          $html .= '<div class="travail">' . $travail . '</div>';
+        }
+        if ($remarque) {
+          $html .= '<div class="remarque">' . $remarque . '</div>';
+        }
+        $html .= '</div>';
+      }
+    }
+
+    $html .= '<div class="footer">Cahier de textes — Document généré automatiquement</div>
+</body>
+</html>';
+
+    echo $html;
+  }
+
+  // === EXPORT CSV ===
+
+  /**
+   * Export CSV - Generates a CSV file for a classe's seances
+   */
+  public function exportcsvAction() {
+    $request = Controller::getInstance()->getRequest();
+    $annee_scolaire = $request['year'] ?? '';
+    $classe = $request['classe'] ?? '';
+
+    if (!$annee_scolaire || !$classe) {
+      header('Content-Type: application/json');
+      echo json_encode(['status' => 'error', 'errors' => ['Paramètres manquants']]);
+      return;
+    }
+
+    $seance = new Seances($classe, $annee_scolaire);
+    $seances = $seance->getData();
+
+    // Sort seances by date ascending
+    usort($seances, function($a, $b) {
+      return strcmp($a['date'], $b['date']);
+    });
+
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="cahier_textes_' . $classe . '_' . date('Ymd') . '.csv"');
+
+    $output = fopen('php://output', 'w');
+    fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF)); // UTF-8 BOM
+
+    fputcsv($output, ['Date', 'Début', 'Fin', 'Groupe', 'Titre', 'Travail', 'Remarques'], ';');
+
+    foreach ($seances as $s) {
+      fputcsv($output, [
+        $s['date'] ?? '',
+        $s['debut'] ?? '',
+        $s['fin'] ?? '',
+        $s['groupe'] ?? '',
+        $s['titre'] ?? '',
+        strip_tags($s['travail'] ?? ''),
+        $s['remarque'] ?? ''
+      ], ';');
+    }
+
+    fclose($output);
+  }
+
+  // === ENSEIGNANT ENDPOINTS ===
+
+  /**
+   * Update teacher info in config.json
+   */
+  public function updateteacherAction() {
+    $this->requireAuth();
+    if (!$this->isPOST()) {
+      $this->addError("Only POST method is supported!");
+      $this->write();
+      die();
+    }
+
+    $req = $this->getRequest();
+    $config = $this->loadConfig();
+
+    $matieresJson = $req['matieres'] ?? '[]';
+    $matieres = json_decode($matieresJson, true);
+    if (!is_array($matieres)) {
+      $matieres = [];
+    }
+
+    $config['enseignant'] = [
+      'id' => $this->sanitizeHtml($req['id'] ?? ''),
+      'name' => $this->sanitizeHtml($req['name'] ?? ''),
+      'firstName' => $this->sanitizeHtml($req['firstName'] ?? ''),
+      'specialite' => $this->sanitizeHtml($req['specialite'] ?? ''),
+      'matieres' => array_map([$this, 'sanitizeHtml'], $matieres)
+    ];
+
+    $this->saveConfig($config);
+    $this->addData('enseignant', $config['enseignant']);
     $this->write();
   }
 

@@ -2,24 +2,18 @@
 class Seances
 {
     private $_classe;
+    private $_year;
     private $_filename;
     private $_data;
 
     /**
-     * @param string $classeOrFilename Nom de classe simple (2TI1) ou fichier complet (2025_2026_2TI1.json)
+     * @param string $classe Nom de classe simple (2TI1) ou fichier complet (2025_2026_2TI1.json)
      */
-    public function __construct($classeOrFilename)
+    public function __construct($classe, $year)
     {
-        // Si le paramètre contient un point, c'est un nom de fichier complet
-        if (strpos($classeOrFilename, '.') !== false) {
-            $this->_filename = JSON_FOLDER . "/" . $classeOrFilename;
-            // Extraire le nom de classe du fichier
-            $parts = explode('_', basename($classeOrFilename, '.json'));
-            $this->_classe = end($parts);
-        } else {
-            $this->_classe = $classeOrFilename;
-            $this->_filename = JSON_FOLDER . "/" . $classeOrFilename . ".json";
-        }
+        $this->_year = $year;
+        $this->_classe = $classe;
+        $this->_filename = JSON_FOLDER . DIRECTORY_SEPARATOR . str_replace("/", DIRECTORY_SEPARATOR, $year) . "_" . $classe . ".json";
         $this->load();
     }
 
@@ -28,7 +22,12 @@ class Seances
         if (file_exists($this->_filename)) {
             $this->_data = json_decode(file_get_contents($this->_filename), true);
         } else {
+            // Créer le dossier s'il n'existe pas
+            if (!is_dir(dirname($this->_filename))) {
+                mkdir(dirname($this->_filename), 0755, true);
+            }
             $this->_data = [];
+            $this->save();
         }
     }
 
