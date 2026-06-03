@@ -135,6 +135,11 @@ function startApp(isLoggedIn) {
         this.showAddSlotForm = false;
         this.editingSlotIndex = -1;
         if (tab !== 'classes') this.selectedYear = null;
+        // Re-rendre le graphique quand on revient sur le dashboard
+        if (tab === 'dashboard') {
+          var self = this;
+          this.$nextTick(function () { self.renderChart(); });
+        }
       },
 
       // --- LOAD ---

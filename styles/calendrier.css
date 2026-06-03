@@ -62,7 +62,6 @@
 .cal-table {
   width: 100%;
   table-layout: fixed;
-  min-width: 480px; /* force scroll on small screens */
 }
 
 .cal-table th {

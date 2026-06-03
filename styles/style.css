@@ -2,9 +2,6 @@
    CAHIER DE TEXTES - Modern Light Theme
    ======================================== */
 
-/* --- Import Lato Font --- */
-@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
-
 /* --- Global Reset & Base --- */
 * {
   box-sizing: border-box;
