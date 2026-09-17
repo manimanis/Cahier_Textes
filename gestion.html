@@ -33,7 +33,13 @@
       <p class="text-muted">Chargement...</p>
     </div>
 
-    <div v-if="!loading && !isLoggedIn" class="row justify-content-center my-5">
+    <div v-if="!loading && !backendAvailable" class="alert alert-warning my-5 shadow-sm text-center py-4">
+      <h4 class="alert-heading font-weight-bold">ℹ️ Mode consultation statique (GitHub Pages)</h4>
+      <p class="mb-2">L'administration et la modification des données s'effectuent en local sur votre PC via XAMPP.</p>
+      <p class="mb-0"><a href="index.html" class="btn btn-primary btn-sm font-weight-bold">&larr; Consulter le Cahier de textes</a></p>
+    </div>
+
+    <div v-if="!loading && backendAvailable && !isLoggedIn" class="row justify-content-center my-5">
       <div class="col-sm-6">
         <div class="section-card">
           <div class="card-title">🔐 Connexion requise</div>

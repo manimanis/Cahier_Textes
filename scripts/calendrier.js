@@ -24,7 +24,9 @@ function startApp() {
       loading: true,
       months: [],
       selectedYear: annee_scolaire,
-      years: yearsList
+      years: yearsList,
+      isStatic: isStaticEnvironment,
+      activeDay: null
     },
     mounted() {
       const annee = +this.annee_scolaire.substring(0, 4);
@@ -45,23 +47,30 @@ function startApp() {
       buildCalendar(annee) {
         this.months = [];
         let year = annee, month = 9;
-        for (let i = 0; i < 9; i++) {
+        // 10 mois : Septembre à Juin
+        for (let i = 0; i < 10; i++) {
           this.months.push(this.createMonth(year, month));
           month++;
           if (month > 12) { month = 1; year++; }
         }
 
-        const allClasses = classes.length > 0 ? classes : ["none"];
+        const allClasses = [...new Set([...classes, 'others'])];
         Promise.all(allClasses.map(c =>
-          fetch(`json/${this.annee_scolaire}_${c}.json`).then(r => r.json()).then(data => {
-            if (!data) return;
-            data.forEach(s => {
-              const dt = new Date(s.date);
+          loadSeancesData(this.annee_scolaire, c).then(seances => {
+            if (!seances) return;
+            seances.forEach(s => {
+              const dt = new Date(s.date + 'T00:00:00');
               const mi = (dt.getMonth() - 8) + (dt.getFullYear() - annee) * 12;
               if (this.months[mi]) {
                 const di = dt.getDate() - 1;
-                if (this.months[mi].days[di])
-                  this.months[mi].days[di].obs += '<span class="cal-tag">' + s.classe + '</span> ';
+                if (this.months[mi].days[di]) {
+                  const dayObj = this.months[mi].days[di];
+                  if (!dayObj.seances) dayObj.seances = [];
+                  dayObj.seances.push(s);
+                  const isSpecial = s.classe === 'others' || s.classe.includes('JF') || s.classe.includes('Réu');
+                  const tagCls = isSpecial ? 'cal-tag bg-warning text-dark' : 'cal-tag';
+                  dayObj.obs += `<span class="${tagCls}" title="${s.titre || s.classe}">${s.classe}</span> `;
+                }
               }
             });
           }).catch(() => null)
@@ -77,7 +86,7 @@ function startApp() {
         const mo = { name: d.toLocaleString('fr-FR', { month: 'long' }) + ' ' + y, days: [] };
         for (let t = d.getTime(); t < e.getTime(); t += 864e5) {
           const dt = new Date(t);
-          mo.days.push({ date: dt, dow: dt.toLocaleString('fr-FR', { weekday: 'long' }).substring(0, 3), obs: '' });
+          mo.days.push({ date: dt, dow: dt.toLocaleString('fr-FR', { weekday: 'long' }).substring(0, 3), obs: '', seances: [] });
         }
         return mo;
       },
@@ -97,6 +106,19 @@ function startApp() {
         if (dd === 0 || dd === 6) parts.push('cal-we');
         if (d.obs) parts.push('cal-jt');
         return parts.length ? parts.join(' ') : '';
+      },
+      onDayClicked(day) {
+        if (day && day.seances && day.seances.length > 0) {
+          this.activeDay = day;
+          if (typeof $ !== 'undefined') {
+            $('#modalDayDetails').modal('show');
+          }
+        }
+      },
+      formatDate(d) {
+        if (!d) return '';
+        const dt = new Date(d);
+        return dt.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
       },
       changeYear() {
         window.location.href = 'calendrier.html?year=' + encodeURIComponent(this.selectedYear);

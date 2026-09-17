@@ -8,17 +8,25 @@ const ConfigService = {
   _loading: null,
 
   /**
-   * Load config from server. Returns a Promise.
+   * Load config from server or static json. Returns a Promise.
    */
   load() {
     if (this._config) return Promise.resolve(this._config);
     if (this._loading) return this._loading;
 
-    this._loading = fetch('operations.php?act=getconfig')
-      .then(r => r.json())
-      .then(data => {
-        if (data.status === 'ok' && data.data && data.data.config) {
-          this._config = data.data.config;
+    this._loading = fetch('json/config.json', { cache: 'no-cache' })
+      .then(r => {
+        if (!r.ok) throw new Error('config.json not found');
+        return r.json();
+      })
+      .catch(() => {
+        return fetch('operations.php?act=getconfig', { cache: 'no-cache' })
+          .then(r => r.json())
+          .then(data => (data && data.status === 'ok' && data.data) ? data.data.config : null);
+      })
+      .then(config => {
+        if (config) {
+          this._config = config;
           return this._config;
         }
         throw new Error('Failed to load config');

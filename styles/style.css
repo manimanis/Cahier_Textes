@@ -550,3 +550,148 @@ section form#form-seance-new {
   padding: 1.25rem;
   margin: 0.5rem -0.5rem;
 }
+
+/* ========================================
+   MODERN PORTAL & TAB NAVIGATION
+   ======================================== */
+.portal-header {
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.portal-title {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #2d3436;
+}
+
+.portal-title::before, .portal-title::after {
+  display: none !important;
+}
+
+.portal-subtitle {
+  color: #636e72;
+  font-size: 0.95rem;
+  margin-top: 0.2rem;
+}
+
+.custom-nav-pills {
+  display: flex;
+  gap: 0.5rem;
+  background: #f1f2f6;
+  padding: 0.35rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e4e7eb;
+}
+
+.custom-nav-pills .nav-link {
+  color: #636e72;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 0.55rem;
+  padding: 0.6rem 1.25rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.custom-nav-pills .nav-link:hover {
+  color: #2d3436;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.custom-nav-pills .nav-link.active {
+  background: #ffffff;
+  color: #6c5ce7;
+  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.15);
+}
+
+/* --- Class Cards in Home View --- */
+.class-consult-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  border: 1px solid #eef0f3;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.class-consult-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #6c5ce7, #00b894);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.class-consult-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(108, 92, 231, 0.12);
+  border-color: #d1d8e0;
+}
+
+.class-consult-card:hover::before {
+  opacity: 1;
+}
+
+.class-consult-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #2d3436;
+  margin-bottom: 0.5rem;
+}
+
+.class-consult-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 2rem;
+  background: #eef2ff;
+  color: #6c5ce7;
+}
+
+/* --- Filter Bar --- */
+.consultation-toolbar {
+  background: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  border: 1px solid #eef0f3;
+  margin-bottom: 1.5rem;
+}
+
+/* --- Empty state --- */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  background: #ffffff;
+  border-radius: 1rem;
+  border: 2px dashed #dfe6e9;
+  color: #b2bec3;
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: block;
+}

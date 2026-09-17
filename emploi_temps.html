@@ -28,7 +28,8 @@
           style="width:auto;min-width:120px;" v-if="years.length > 0">
           <option v-for="y in years" :key="y.label" :value="y.label">{{y.label}}</option>
         </select>
-        <a href="gestion.html" class="btn btn-outline-secondary btn-sm">⚙️ Gestion</a>
+        <a href="gestion.html" class="btn btn-outline-secondary btn-sm" v-if="!isStatic">⚙️ Gestion</a>
+        <span class="badge badge-secondary" v-if="isStatic" style="font-size:0.75rem;padding:0.45rem 0.65rem;">📖 Lecture seule</span>
         <a href="index.html" class="back-link"><span>&larr;</span> Cahier de textes</a>
       </div>
     </div>

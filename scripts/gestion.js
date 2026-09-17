@@ -5,12 +5,18 @@
    ======================================== */
 
 document.addEventListener('DOMContentLoaded', function () {
-  fetch('operations.php?act=authcheck')
-    .then(r => r.json())
-    .then(data => {
-      startApp(data.data && data.data.authenticated);
-    })
-    .catch(() => startApp(false));
+  checkBackendAvailable().then(avail => {
+    if (!avail) {
+      startApp(false, false);
+      return;
+    }
+    fetch('operations.php?act=authcheck')
+      .then(r => r.json())
+      .then(data => {
+        startApp(data.data && data.data.authenticated, true);
+      })
+      .catch(() => startApp(false, true));
+  });
 });
 
 // ===== TOAST SYSTEM =====
@@ -48,11 +54,12 @@ if (!document.getElementById('toast-keyframes')) {
   document.head.appendChild(style);
 }
 
-function startApp(isLoggedIn) {
+function startApp(isLoggedIn, backendAvailable) {
   new Vue({
     el: '#app',
     data: {
       loading: true,
+      backendAvailable: (backendAvailable !== undefined) ? backendAvailable : true,
       isLoggedIn: isLoggedIn,
       loginPseudo: '',
       loginPassword: '',

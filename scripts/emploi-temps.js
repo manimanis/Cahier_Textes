@@ -36,7 +36,8 @@ function startApp() {
       emploi: emploi,
       selectedYear: annee_scolaire,
       years: yearsList,
-      loading: false
+      loading: false,
+      isStatic: isStaticEnvironment
     },
     computed: {
       days() {
