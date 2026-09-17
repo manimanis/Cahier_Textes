@@ -148,14 +148,16 @@
                     "groupe": "Toute la classe"
                 }
             ],
-            "isCurrent": true
+            "isCurrent": false
         },
         {
             "label": "2026\/2027",
             "startMonth": 9,
             "classes": [
-                "2INFO1",
-                "3T2"
+                "3T2",
+                "2SC2",
+                "3SI2",
+                "4SC2"
             ],
             "classesDisplay": {
                 "2TI1": "2<sup>e<\/sup> Tech. de l'informatique",
@@ -164,7 +166,10 @@
                 "4T1": "4<sup>e<\/sup> Techniques",
                 "others": "Autres",
                 "2INFO1": "2INFO1",
-                "3T2": "3T2"
+                "3T2": "3e Techniques 2",
+                "2SC2": "2e Sciences 2",
+                "3SI2": "3e Sciences de l'informatique 2",
+                "4SC2": "4e Sciences 2"
             },
             "groupes": [
                 "Toute la classe",
@@ -174,27 +179,41 @@
             "emploi": [
                 {
                     "day": 1,
-                    "startTime": "08:00",
-                    "endTime": "10:00",
-                    "classe": "2INFO1",
-                    "groupe": "Groupe 1"
-                },
-                {
-                    "day": 1,
-                    "startTime": "12:00",
-                    "endTime": "14:00",
-                    "classe": "2INFO1",
-                    "groupe": "Groupe 2"
+                    "startTime": "14:00",
+                    "endTime": "17:00",
+                    "classe": "3T2",
+                    "groupe": "Toute la classe"
                 },
                 {
                     "day": 2,
-                    "startTime": "15:00",
+                    "startTime": "08:00",
+                    "endTime": "11:00",
+                    "classe": "4SC2",
+                    "groupe": "Toute la classe"
+                },
+                {
+                    "day": 3,
+                    "startTime": "08:00",
+                    "endTime": "12:00",
+                    "classe": "3SI2",
+                    "groupe": "Toute la classe"
+                },
+                {
+                    "day": 4,
+                    "startTime": "08:00",
+                    "endTime": "10:00",
+                    "classe": "2SC2",
+                    "groupe": "Toute la classe"
+                },
+                {
+                    "day": 4,
+                    "startTime": "14:00",
                     "endTime": "18:00",
-                    "classe": "3T2",
+                    "classe": "3SI2",
                     "groupe": "Toute la classe"
                 }
             ],
-            "isCurrent": false
+            "isCurrent": true
         }
     ]
 }
