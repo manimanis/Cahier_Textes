@@ -43,6 +43,23 @@
   color: #adb5bd;
 }
 
+.breadcrumb-g a {
+  color: #2980b9;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.breadcrumb-g a:hover {
+  color: #1a5276;
+  text-decoration: underline;
+}
+
+.breadcrumb-g .current {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
 /* --- Modern Tabs --- */
 .nav-tabs-g {
   display: flex;
@@ -54,6 +71,9 @@
 }
 
 .nav-tab-g {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
   padding: 0.6rem 1rem;
   background: transparent;
   border: none;
@@ -67,9 +87,11 @@
   white-space: nowrap;
 }
 
-.nav-tab-g:hover {
+.nav-tab-g:hover,
+.nav-tab-g:focus {
   background: #f8f9fa;
   color: #2c3e50;
+  text-decoration: none;
 }
 
 .nav-tab-g.active {
@@ -119,6 +141,44 @@
 
 .emploi-row:hover {
   background: #f8f9fa;
+}
+
+/* --- Reordering & Drag handle --- */
+.drag-handle {
+  cursor: grab;
+  color: #adb5bd;
+  font-size: 1.15rem;
+  padding: 0 4px;
+  user-select: none;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.drag-handle:hover {
+  color: #495057;
+  transform: scale(1.15);
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.emploi-row.drag-over {
+  border-top: 2px solid #2980b9 !important;
+  background: #ebf5fb !important;
+}
+
+.emploi-row.is-dragging {
+  opacity: 0.4;
+  background: #e9ecef !important;
+}
+
+.order-btn {
+  padding: 0.2rem 0.4rem;
+  font-size: 0.7rem;
+  line-height: 1;
 }
 
 /* --- Badge Year --- */
@@ -368,6 +428,18 @@ body.dark-mode .breadcrumb-g .sep {
   color: #555 !important;
 }
 
+body.dark-mode .breadcrumb-g a {
+  color: #74b9ff !important;
+}
+
+body.dark-mode .breadcrumb-g a:hover {
+  color: #a29bfe !important;
+}
+
+body.dark-mode .breadcrumb-g .current {
+  color: #f5f6fa !important;
+}
+
 /* Dashboard Stats */
 body.dark-mode .stat-card {
   background: #25282e !important;
@@ -547,3 +619,21 @@ body.dark-mode .card-header {
 body.dark-mode .card-header h3 {
   color: #e4e6eb !important;
 }
+
+body.dark-mode .drag-handle {
+  color: #6c757d;
+}
+
+body.dark-mode .drag-handle:hover {
+  color: #adb5bd;
+}
+
+body.dark-mode .emploi-row.drag-over {
+  border-top: 2px solid #4da3ff !important;
+  background: #1a2736 !important;
+}
+
+body.dark-mode .emploi-row.is-dragging {
+  background: #2d3139 !important;
+}
+

@@ -215,20 +215,35 @@ function startApp() {
       }
     },
     mounted: function () {
-      // Synchronisation de l'onglet via URL Hash
-      if (window.location.hash === '#emploi') {
-        this.activeTab = 'emploi';
-      } else if (window.location.hash === '#calendrier') {
-        this.activeTab = 'calendrier';
-      } else {
-        this.activeTab = 'seances';
-      }
+      // Synchronisation de l'onglet et de la classe via URL Hash
+      const syncFromUrlHash = () => {
+        const hash = window.location.hash || '';
+        if (hash === '#emploi') {
+          this.activeTab = 'emploi';
+        } else if (hash === '#calendrier') {
+          this.activeTab = 'calendrier';
+        } else if (hash.startsWith('#seances/')) {
+          this.activeTab = 'seances';
+          const cls = decodeURIComponent(hash.substring('#seances/'.length));
+          if (cls && cls !== this.selectedClasse) {
+            this.onClasseChanged(cls, false);
+          }
+        } else if (hash.startsWith('#classe/')) {
+          this.activeTab = 'seances';
+          const cls = decodeURIComponent(hash.substring('#classe/'.length));
+          if (cls && cls !== this.selectedClasse) {
+            this.onClasseChanged(cls, false);
+          }
+        } else {
+          this.activeTab = 'seances';
+          if (this.selectedClasse) {
+            this.onClasseChanged('', false);
+          }
+        }
+      };
 
-      window.addEventListener('hashchange', () => {
-        if (window.location.hash === '#emploi') this.activeTab = 'emploi';
-        else if (window.location.hash === '#calendrier') this.activeTab = 'calendrier';
-        else this.activeTab = 'seances';
-      });
+      syncFromUrlHash();
+      window.addEventListener('hashchange', syncFromUrlHash);
 
       // Vérification du backend PHP
       checkBackendAvailable().then(avail => {
@@ -249,7 +264,11 @@ function startApp() {
       // === NAVIGATION ONGLETS ===
       switchTab: function (tab) {
         this.activeTab = tab;
-        window.location.hash = '#' + tab;
+        if (tab === 'seances' && this.selectedClasse) {
+          window.location.hash = '#seances/' + encodeURIComponent(this.selectedClasse);
+        } else {
+          window.location.hash = '#' + tab;
+        }
       },
 
       // === COMPTEURS DE SÉANCES ===
@@ -359,7 +378,7 @@ function startApp() {
           });
       },
 
-      onClasseChanged: function (classe) {
+      onClasseChanged: function (classe, updateHash = true) {
         this.selectedClasse = classe;
         this.selectedSeance = -1;
         this.mode = "list";
@@ -370,8 +389,14 @@ function startApp() {
         if (classe) {
           document.title = "Cahier de textes - Classe " + classe;
           this.loadData(classe);
+          if (updateHash) {
+            window.location.hash = '#seances/' + encodeURIComponent(classe);
+          }
         } else {
           document.title = "Cahier de textes";
+          if (updateHash && this.activeTab === 'seances') {
+            window.location.hash = '#seances';
+          }
         }
       },
       onIntervalChanged: function (flag) {

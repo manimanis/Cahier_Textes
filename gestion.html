@@ -64,33 +64,57 @@
     <div v-if="!loading && isLoggedIn">
 
       <!-- Breadcrumb -->
-      <nav class="breadcrumb-g">
-        <span>⚙️ Gestion</span>
+      <nav class="breadcrumb-g" aria-label="Fil d'Ariane">
+        <a href="#dashboard" v-on:click.prevent="switchTab('dashboard')">⚙️ Gestion</a>
         <span class="sep">›</span>
-        <span v-if="activeTab === 'dashboard'">📊 Tableau de bord</span>
-        <span v-else-if="activeTab === 'teacher'">👨‍🏫 Enseignant</span>
-        <span v-else-if="activeTab === 'years'">📅 Années</span>
-        <span v-else-if="activeTab === 'classes'">🏫 Classes</span>
-        <span v-else-if="activeTab === 'schedule'">⏰ Emploi du temps</span>
+        <template v-if="activeTab === 'dashboard'">
+          <span class="current">📊 Tableau de bord</span>
+        </template>
+        <template v-else-if="activeTab === 'teacher'">
+          <span class="current">👨‍🏫 Enseignant</span>
+        </template>
+        <template v-else-if="activeTab === 'years'">
+          <span class="current">📅 Années</span>
+        </template>
+        <template v-else-if="activeTab === 'classes'">
+          <template v-if="selectedYear">
+            <a href="#classes" v-on:click.prevent="unselectYear('classes')">🏫 Classes</a>
+            <span class="sep">›</span>
+            <span class="current">{{ selectedYear.label }}</span>
+          </template>
+          <template v-else>
+            <span class="current">🏫 Classes</span>
+          </template>
+        </template>
+        <template v-else-if="activeTab === 'schedule'">
+          <template v-if="selectedYear && showEmploiEditor">
+            <a href="#schedule" v-on:click.prevent="unselectYear('schedule')">⏰ Emploi du temps</a>
+            <span class="sep">›</span>
+            <span class="current">{{ selectedYear.label }}</span>
+          </template>
+          <template v-else>
+            <span class="current">⏰ Emploi du temps</span>
+          </template>
+        </template>
       </nav>
 
       <!-- Onglets modernes -->
       <nav class="nav-tabs-g" role="tablist" aria-label="Navigation des sections">
-        <button class="nav-tab-g" role="tab" aria-selected="true" v-bind:class="{active: activeTab === 'dashboard'}" v-on:click="switchTab('dashboard')" v-bind:aria-selected="activeTab === 'dashboard' ? 'true' : 'false'">
+        <a href="#dashboard" class="nav-tab-g" role="tab" v-bind:class="{active: activeTab === 'dashboard'}" v-on:click.prevent="switchTab('dashboard')" v-bind:aria-selected="activeTab === 'dashboard' ? 'true' : 'false'">
           📊 Tableau de bord
-        </button>
-        <button class="nav-tab-g" role="tab" v-bind:class="{active: activeTab === 'teacher'}" v-on:click="switchTab('teacher')" v-bind:aria-selected="activeTab === 'teacher' ? 'true' : 'false'">
+        </a>
+        <a href="#teacher" class="nav-tab-g" role="tab" v-bind:class="{active: activeTab === 'teacher'}" v-on:click.prevent="switchTab('teacher')" v-bind:aria-selected="activeTab === 'teacher' ? 'true' : 'false'">
           👨‍🏫 Enseignant
-        </button>
-        <button class="nav-tab-g" role="tab" v-bind:class="{active: activeTab === 'years'}" v-on:click="switchTab('years')" v-bind:aria-selected="activeTab === 'years' ? 'true' : 'false'">
+        </a>
+        <a href="#years" class="nav-tab-g" role="tab" v-bind:class="{active: activeTab === 'years'}" v-on:click.prevent="switchTab('years')" v-bind:aria-selected="activeTab === 'years' ? 'true' : 'false'">
           📅 Années <span class="badge">{{ totalYears }}</span>
-        </button>
-        <button class="nav-tab-g" role="tab" v-bind:class="{active: activeTab === 'classes'}" v-on:click="switchTab('classes')" v-bind:aria-selected="activeTab === 'classes' ? 'true' : 'false'">
+        </a>
+        <a href="#classes" class="nav-tab-g" role="tab" v-bind:class="{active: activeTab === 'classes'}" v-on:click.prevent="switchTab('classes')" v-bind:aria-selected="activeTab === 'classes' ? 'true' : 'false'">
           🏫 Classes <span class="badge">{{ totalClasses }}</span>
-        </button>
-        <button class="nav-tab-g" role="tab" v-bind:class="{active: activeTab === 'schedule'}" v-on:click="switchTab('schedule')" v-bind:aria-selected="activeTab === 'schedule' ? 'true' : 'false'">
+        </a>
+        <a href="#schedule" class="nav-tab-g" role="tab" v-bind:class="{active: activeTab === 'schedule'}" v-on:click.prevent="switchTab('schedule')" v-bind:aria-selected="activeTab === 'schedule' ? 'true' : 'false'">
           ⏰ Créneaux <span class="badge">{{ totalSlots }}</span>
-        </button>
+        </a>
       </nav>
 
       <!-- ============ DASHBOARD ============ -->
@@ -131,7 +155,7 @@
             </p>
             <canvas id="dashboardChart" height="80" v-if="totalYears > 0"></canvas>
             <div v-if="totalYears === 0" class="alert alert-info mt-3">
-              👋 Bienvenue ! Commencez par créer une <a href="#" v-on:click.prevent="switchTab('years')">année scolaire</a>.
+              👋 Bienvenue ! Commencez par créer une <a href="#years" v-on:click.prevent="switchTab('years')">année scolaire</a>.
             </div>
           </div>
         </div>
@@ -205,8 +229,8 @@
                 {{year.classes.length}} classes | {{year.emploi.length}} créneaux
               </span>
               <div class="ml-auto d-flex" style="gap:4px;">
-                <button class="btn btn-outline-primary btn-sm" v-on:click="switchTab('classes'); editYear(year)">🏫</button>
-                <button class="btn btn-outline-success btn-sm" v-on:click="switchTab('schedule'); editEmploi(year)">⏰</button>
+                <a :href="'#classes?year=' + encodeURIComponent(year.label)" class="btn btn-outline-primary btn-sm" v-on:click.prevent="goToClasses(year)" title="Gérer les classes">🏫</a>
+                <a :href="'#schedule?year=' + encodeURIComponent(year.label)" class="btn btn-outline-success btn-sm" v-on:click.prevent="goToSchedule(year)" title="Gérer les créneaux">⏰</a>
               <button class="btn btn-outline-primary btn-sm" v-if="!year.isCurrent"
                   v-on:click="setCurrentYear(year.label)">✓ Courante</button>
                 <button class="btn btn-outline-danger btn-sm"
@@ -233,18 +257,28 @@
           <div class="card-title d-flex justify-content-between align-items-center">
             <span>🏫 Classes - {{selectedYear.label}}</span>
             <div>
-              <button class="btn btn-outline-secondary btn-sm" v-on:click="selectedYear = null">← Retour</button>
+              <a href="#classes" class="btn btn-outline-secondary btn-sm" v-on:click.prevent="unselectYear('classes')">← Retour</a>
               <button class="btn btn-primary btn-sm" v-on:click="openAddClassForm()">+ Ajouter</button>
             </div>
           </div>
           <div class="card-body">
-            <div v-for="(cls, ci) in selectedYear.classes" v-bind:key="ci"
-              v-if="!(showEditClassForm && editingClassIndex === ci)" class="emploi-row">
+            <div v-for="(cls, ci) in selectedYear.classes" v-bind:key="cls"
+              v-if="!(showEditClassForm && editingClassIndex === ci)" class="emploi-row"
+              draggable="true"
+              v-on:dragstart="onClassDragStart($event, ci)"
+              v-on:dragover.prevent="onClassDragOver($event, ci)"
+              v-on:dragleave="onClassDragLeave(ci)"
+              v-on:drop="onClassDrop($event, ci)"
+              v-on:dragend="onClassDragEnd()"
+              v-bind:class="{'drag-over': dragOverClassIndex === ci, 'is-dragging': draggedClassIndex === ci}">
+              <span class="drag-handle" title="Glisser pour modifier l'ordre">⋮⋮</span>
               <strong>{{cls}}</strong>
               <span class="text-muted" v-if="selectedYear.classesDisplay[cls]">→ {{selectedYear.classesDisplay[cls]}}</span>
-              <div class="ml-auto d-flex" style="gap:4px;">
-                <button class="btn btn-outline-secondary btn-sm" v-on:click="openEditClassForm(ci)">✏️</button>
-                <button class="btn btn-danger btn-sm" v-on:click="removeClass(ci)">🗑️</button>
+              <div class="ml-auto d-flex align-items-center" style="gap:4px;">
+                <button class="btn btn-outline-secondary btn-sm order-btn" v-on:click="moveClassUp(ci)" :disabled="ci === 0" title="Monter la classe">▲</button>
+                <button class="btn btn-outline-secondary btn-sm order-btn" v-on:click="moveClassDown(ci)" :disabled="ci === selectedYear.classes.length - 1" title="Descendre la classe">▼</button>
+                <button class="btn btn-outline-secondary btn-sm" v-on:click="openEditClassForm(ci)" title="Modifier la classe">✏️</button>
+                <button class="btn btn-danger btn-sm" v-on:click="removeClass(ci)" title="Supprimer la classe">🗑️</button>
               </div>
             </div>
             <div v-if="showEditClassForm" class="form-panel form-panel-edit">
@@ -302,7 +336,7 @@
           <div class="card-title d-flex justify-content-between align-items-center">
             <span>⏰ Emploi du temps - {{selectedYear.label}}</span>
             <div>
-              <button class="btn btn-outline-secondary btn-sm" v-on:click="selectedYear = null; showEmploiEditor = false;">← Retour</button>
+              <a href="#schedule" class="btn btn-outline-secondary btn-sm" v-on:click.prevent="unselectYear('schedule')">← Retour</a>
               <button class="btn btn-success btn-sm" v-on:click="addEmploiSlot()">+ Ajouter créneau</button>
             </div>
           </div>

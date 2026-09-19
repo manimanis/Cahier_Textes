@@ -82,9 +82,15 @@ function startApp(isLoggedIn, backendAvailable) {
       jourNames: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
       enseignantData: { id: '', name: '', firstName: '', specialite: '', matieresStr: '' },
       teacherSaveStatus: '',
+      draggedClassIndex: -1,
+      dragOverClassIndex: -1,
       darkMode: localStorage.getItem('gestion-dark-mode') === '1'
     },
     mounted: function () {
+      var self = this;
+      window.addEventListener('hashchange', function () {
+        self.syncFromHash();
+      });
       if (this.isLoggedIn) this.loadConfig();
       else this.loading = false;
       this.applyDarkMode();
@@ -131,6 +137,87 @@ function startApp(isLoggedIn, backendAvailable) {
         else document.body.classList.remove('dark-mode');
       },
 
+      // --- HASH ROUTING ---
+      updateUrlHash: function () {
+        var hash = '#' + this.activeTab;
+        if (this.activeTab === 'classes' && this.selectedYear) {
+          hash += '?year=' + encodeURIComponent(this.selectedYear.label);
+        } else if (this.activeTab === 'schedule' && this.selectedYear && this.showEmploiEditor) {
+          hash += '?year=' + encodeURIComponent(this.selectedYear.label);
+        }
+        if (window.location.hash !== hash) {
+          window.location.hash = hash;
+        }
+      },
+      syncFromHash: function () {
+        var rawHash = window.location.hash || '';
+        if (!rawHash || rawHash === '#') {
+          this.activeTab = 'dashboard';
+          var self = this;
+          this.$nextTick(function () { self.renderChart(); });
+          return;
+        }
+
+        var content = rawHash.replace(/^#/, '');
+        var tab = content;
+        var yearParam = null;
+
+        if (content.indexOf('?') !== -1) {
+          var parts = content.split('?');
+          tab = parts[0];
+          var qParams = new URLSearchParams(parts[1]);
+          yearParam = qParams.get('year');
+        } else if (content.indexOf('/') !== -1) {
+          var slashParts = content.split('/');
+          tab = slashParts[0];
+          yearParam = decodeURIComponent(slashParts.slice(1).join('/'));
+        }
+
+        var validTabs = ['dashboard', 'teacher', 'years', 'classes', 'schedule'];
+        if (validTabs.indexOf(tab) === -1) {
+          tab = 'dashboard';
+        }
+
+        this.activeTab = tab;
+
+        // Réinitialiser les sous-formulaires
+        this.showCreateYear = false;
+        this.showAddClassForm = false;
+        this.showEditClassForm = false;
+        this.editingClassIndex = -1;
+        this.showAddSlotForm = false;
+        this.editingSlotIndex = -1;
+
+        if (yearParam && this.config && this.config.years) {
+          var matchedYear = this.config.years.find(function (y) {
+            return y.label === yearParam || y.label.replace(/\//g, '-') === yearParam;
+          });
+          if (matchedYear) {
+            if (tab === 'classes') {
+              this.editYear(matchedYear, false);
+            } else if (tab === 'schedule') {
+              this.editEmploi(matchedYear, false);
+            }
+          } else {
+            this.selectedYear = null;
+          }
+        } else {
+          if (tab === 'classes') {
+            this.selectedYear = null;
+          } else if (tab === 'schedule') {
+            this.selectedYear = null;
+            this.showEmploiEditor = false;
+          } else {
+            this.selectedYear = null;
+          }
+        }
+
+        if (tab === 'dashboard') {
+          var self = this;
+          this.$nextTick(function () { self.renderChart(); });
+        }
+      },
+
       // --- TABS ---
       switchTab: function (tab) {
         this.activeTab = tab;
@@ -141,12 +228,35 @@ function startApp(isLoggedIn, backendAvailable) {
         this.editingClassIndex = -1;
         this.showAddSlotForm = false;
         this.editingSlotIndex = -1;
-        if (tab !== 'classes') this.selectedYear = null;
-        // Re-rendre le graphique quand on revient sur le dashboard
+        if (tab !== 'classes' && tab !== 'schedule') {
+          this.selectedYear = null;
+        } else if (!this.selectedYear && this.config.years) {
+          // Si aucune année n'est sélectionnée, pré-sélectionner l'année courante si disponible
+          var cur = this.config.years.find(function (y) { return y.isCurrent; });
+          if (cur) {
+            this.selectedYear = cur;
+            if (tab === 'schedule') this.showEmploiEditor = true;
+          }
+        }
         if (tab === 'dashboard') {
           var self = this;
           this.$nextTick(function () { self.renderChart(); });
         }
+        this.updateUrlHash();
+      },
+      goToClasses: function (year) {
+        this.activeTab = 'classes';
+        this.editYear(year);
+      },
+      goToSchedule: function (year) {
+        this.activeTab = 'schedule';
+        this.editEmploi(year);
+      },
+      unselectYear: function (tab) {
+        this.selectedYear = null;
+        if (tab === 'schedule') this.showEmploiEditor = false;
+        this.activeTab = tab;
+        this.updateUrlHash();
       },
 
       // --- LOAD ---
@@ -168,13 +278,17 @@ function startApp(isLoggedIn, backendAvailable) {
               } else {
                 self.config.enseignant = { name: '', firstName: '', specialite: '', id: '', matieres: [] };
               }
-              // Sélectionner automatiquement l'année courante
-              var currentYear = self.config.years.find(function (y) { return y.isCurrent; });
-              if (currentYear) {
-                self.editYear(currentYear);
-                self.editEmploi(currentYear);
+              // Synchroniser avec le hash d'URL ou initialiser
+              if (window.location.hash && window.location.hash !== '#') {
+                self.syncFromHash();
+              } else {
+                var currentYear = self.config.years.find(function (y) { return y.isCurrent; });
+                if (currentYear) {
+                  self.selectedYear = currentYear;
+                }
+                self.activeTab = 'dashboard';
+                self.$nextTick(function () { self.renderChart(); });
               }
-              self.$nextTick(function () { self.renderChart(); });
             }
             self.loading = false;
           })
@@ -267,7 +381,7 @@ function startApp(isLoggedIn, backendAvailable) {
             }
           });
       },
-      editYear: function (year) {
+      editYear: function (year, updateHash = true) {
         this.selectedYear = year;
         this.showEmploiEditor = false;
         this.showAddSlotForm = false;
@@ -275,8 +389,9 @@ function startApp(isLoggedIn, backendAvailable) {
         this.showEditClassForm = false;
         this.editingClassIndex = -1;
         this.editingSlotIndex = -1;
+        if (updateHash) this.updateUrlHash();
       },
-      editEmploi: function (year) {
+      editEmploi: function (year, updateHash = true) {
         this.selectedYear = year;
         this.showEmploiEditor = true;
         this.showAddSlotForm = false;
@@ -284,6 +399,7 @@ function startApp(isLoggedIn, backendAvailable) {
         this.showEditClassForm = false;
         this.editingClassIndex = -1;
         this.editingSlotIndex = -1;
+        if (updateHash) this.updateUrlHash();
       },
       setCurrentYear: function (label) {
         var self = this;
@@ -349,7 +465,7 @@ function startApp(isLoggedIn, backendAvailable) {
       },
 
       // --- SAVE HELPERS ---
-      saveClassesToServer: function () {
+      saveClassesToServer: function (successMsg) {
         var self = this;
         var fd = new URLSearchParams();
         fd.append('year', this.selectedYear.label);
@@ -359,8 +475,59 @@ function startApp(isLoggedIn, backendAvailable) {
           .then(r => r.json())
           .then(function (data) {
             if (data.status !== 'ok') showToast('error', 'Erreur lors de la sauvegarde');
-            else { showToast('success', 'Classes enregistrées'); self.loadConfig(); }
+            else {
+              showToast('success', successMsg || 'Classes enregistrées');
+              self.loadConfig();
+            }
           });
+      },
+
+      // --- RÉORGANISATION DES CLASSES ---
+      moveClassUp: function (idx) {
+        if (idx <= 0 || !this.selectedYear || !this.selectedYear.classes) return;
+        var classes = this.selectedYear.classes;
+        var item = classes.splice(idx, 1)[0];
+        classes.splice(idx - 1, 0, item);
+        this.saveClassesToServer('Ordre des classes mis à jour');
+      },
+      moveClassDown: function (idx) {
+        if (!this.selectedYear || !this.selectedYear.classes || idx >= this.selectedYear.classes.length - 1) return;
+        var classes = this.selectedYear.classes;
+        var item = classes.splice(idx, 1)[0];
+        classes.splice(idx + 1, 0, item);
+        this.saveClassesToServer('Ordre des classes mis à jour');
+      },
+      onClassDragStart: function (e, idx) {
+        this.draggedClassIndex = idx;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', idx);
+      },
+      onClassDragOver: function (e, idx) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (this.draggedClassIndex !== idx) {
+          this.dragOverClassIndex = idx;
+        }
+      },
+      onClassDragLeave: function (idx) {
+        if (this.dragOverClassIndex === idx) {
+          this.dragOverClassIndex = -1;
+        }
+      },
+      onClassDrop: function (e, targetIdx) {
+        e.preventDefault();
+        var fromIdx = this.draggedClassIndex;
+        this.draggedClassIndex = -1;
+        this.dragOverClassIndex = -1;
+        if (fromIdx === -1 || fromIdx === targetIdx || !this.selectedYear || !this.selectedYear.classes) return;
+        var classes = this.selectedYear.classes;
+        var item = classes.splice(fromIdx, 1)[0];
+        classes.splice(targetIdx, 0, item);
+        this.saveClassesToServer('Ordre des classes mis à jour');
+      },
+      onClassDragEnd: function () {
+        this.draggedClassIndex = -1;
+        this.dragOverClassIndex = -1;
       },
 
       // --- CLASSES ---
