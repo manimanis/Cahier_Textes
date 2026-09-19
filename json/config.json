@@ -86,9 +86,9 @@
             "label": "2026\/2027",
             "startMonth": 9,
             "classes": [
-                "3T2",
                 "2SC2",
                 "3SI2",
+                "3T2",
                 "4SC2"
             ],
             "classesDisplay": {
