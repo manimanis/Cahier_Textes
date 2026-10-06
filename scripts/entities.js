@@ -26,17 +26,63 @@ let groupes = ["Toute la classe", "Groupe 1", "Groupe 2"];
 let emploi = [];
 let yearsList = []; // Liste de toutes les années (pour sélecteur)
 
+/**
+ * Décode les entités HTML (&amp;, &apos;, &quot;, &#39;, &lt;, &gt;, etc.)
+ * en caractères correspondants pour un affichage textuel correct.
+ * @param {string} str
+ * @returns {string}
+ */
+function decodeHtmlEntities(str) {
+  if (!str || typeof str !== 'string') return str || '';
+  if (!str.includes('&')) return str;
+
+  try {
+    if (typeof document !== 'undefined') {
+      const txt = document.createElement('textarea');
+      txt.innerHTML = str;
+      let val = txt.value;
+      let loops = 0;
+      while (loops < 3 && val.includes('&') && /&(?:[a-zA-Z0-9]+|#[0-9]+|#x[0-9a-fA-F]+);/.test(val)) {
+        const prev = val;
+        txt.innerHTML = val;
+        val = txt.value;
+        if (val === prev) break;
+        loops++;
+      }
+      return val;
+    }
+  } catch (e) {}
+
+  let val = str;
+  const decodeRegex = (s) => {
+    return s
+      .replace(/&(?:apos|#39|#039|#x27);/gi, "'")
+      .replace(/&(?:quot|#34|#034|#x22);/gi, '"')
+      .replace(/&(?:lt|#60|#060|#x3c);/gi, '<')
+      .replace(/&(?:gt|#62|#062|#x3e);/gi, '>')
+      .replace(/&(?:nbsp|#160|#xa0);/gi, ' ')
+      .replace(/&(?:amp|#38|#038|#x26);/gi, '&');
+  };
+  val = decodeRegex(val);
+  if (val.includes('&')) {
+    val = decodeRegex(val);
+  }
+  return val;
+}
+
 class Seance {
   constructor(obj = {}) {
     this.index = obj.index || 0;
-    this.titre = obj.titre || '';
+    this.titre = decodeHtmlEntities(obj.titre || '');
     this.classe = obj.classe || '';
     this.date = obj.date || '';
     this.debut = obj.debut || '';
     this.fin = obj.fin || '';
     this.groupe = obj.groupe || '';
     this.travail = obj.travail || '';
-    this.remarque = obj.remarque || '';
+    this.remarque = decodeHtmlEntities(obj.remarque || '');
+    this.type = obj.type || '';
+    this.periodId = obj.periodId || '';
   }
 }
 

@@ -67,9 +67,8 @@ function startApp() {
                   const dayObj = this.months[mi].days[di];
                   if (!dayObj.seances) dayObj.seances = [];
                   dayObj.seances.push(s);
-                  const isSpecial = s.classe === 'others' || s.classe.includes('JF') || s.classe.includes('Réu');
-                  const tagCls = isSpecial ? 'cal-tag bg-warning text-dark' : 'cal-tag';
-                  dayObj.obs += `<span class="${tagCls}" title="${s.titre || s.classe}">${s.classe}</span> `;
+                  const tagCls = this.getEventTagClass(s);
+                  dayObj.obs += `<span class="${tagCls}" title="${decodeHtmlEntities(s.titre || s.classe)}">${s.classe}</span> `;
                 }
               }
             });
@@ -105,6 +104,14 @@ function startApp() {
         const parts = [];
         if (dd === 0 || dd === 6) parts.push('cal-we');
         if (d.obs) parts.push('cal-jt');
+        if (d.seances && d.seances.length > 0) {
+          const hasVac = d.seances.some(s => this.isEventSession(s) && this.getEventTagClass(s).includes('cal-tag-vacances'));
+          const hasBlo = d.seances.some(s => this.isEventSession(s) && this.getEventTagClass(s).includes('cal-tag-bloquee'));
+          const hasFer = d.seances.some(s => this.isEventSession(s) && this.getEventTagClass(s).includes('cal-tag-ferie'));
+          if (hasVac) parts.push('cal-cell-vacances');
+          else if (hasBlo) parts.push('cal-cell-bloquee');
+          else if (hasFer) parts.push('cal-cell-ferie');
+        }
         return parts.length ? parts.join(' ') : '';
       },
       onDayClicked(day) {
@@ -115,10 +122,69 @@ function startApp() {
           }
         }
       },
+      isEventSession(s) {
+        if (!s) return false;
+        if (s.type) return true;
+        const clsList = this.classesList || [];
+        if (s.classe === 'others') return true;
+        return !clsList.includes(s.classe);
+      },
+      getEventTagClass(s) {
+        if (!this.isEventSession(s)) {
+          return 'cal-tag';
+        }
+        const type = (s.type || '').toLowerCase();
+        const cl = (s.classe || '').toLowerCase();
+        const tit = (s.titre || '').toLowerCase();
+
+        // 1. Vacances scolaires (priorité absolue pour éviter toute collision sur des mots comme "vacances")
+        if (type === 'vacances' || cl.includes('vac') || tit.includes('vacances')) {
+          return 'cal-tag cal-tag-vacances';
+        }
+        // 2. Semaine bloquée / Examens
+        if (type === 'bloquee' || cl.includes('bloqu') || cl.includes('exam') || tit.includes('bloqu') || tit.includes('examen')) {
+          return 'cal-tag cal-tag-bloquee';
+        }
+        // 3. Jours fériés
+        if (type === 'ferie' || cl.includes('jf') || cl.includes('férié') || cl.includes('ferie') ||
+            tit.includes('férié') || tit.includes('ferie') || tit.includes('fête') || tit.includes('fete') ||
+            tit.includes("jour de l'an") || tit.includes('nouvel an') || tit.includes('évacuation') ||
+            tit.includes('révolution') || tit.includes('revolution') || tit.includes('indépendance') ||
+            tit.includes('independance') || tit.includes('martyrs') || tit.includes('travail') ||
+            tit.includes('mouled') || tit.includes('aïd') || tit.includes('aid')) {
+          return 'cal-tag cal-tag-ferie';
+        }
+        return 'cal-tag cal-tag-autre';
+      },
+      getEventBadgeClass(s) {
+        const tagCls = this.getEventTagClass(s);
+        if (tagCls.includes('cal-tag-vacances')) return 'badge-vacances';
+        if (tagCls.includes('cal-tag-bloquee')) return 'badge-bloquee';
+        if (tagCls.includes('cal-tag-ferie')) return 'badge-ferie';
+        return 'badge-autre';
+      },
+      getEventLabel(s) {
+        const type = (s.type || '').toLowerCase();
+        const cl = (s.classe || '').toLowerCase();
+        const tit = (s.titre || '').toLowerCase();
+        if (type === 'vacances' || cl.includes('vac') || tit.includes('vacances')) {
+          return '🟢 Vacances : ' + (s.classe !== 'others' ? s.classe : 'Vacances');
+        }
+        if (type === 'bloquee' || cl.includes('bloqu') || tit.includes('bloqu')) {
+          return '🟣 Semaine bloquée : ' + (s.classe !== 'others' ? s.classe : 'Bloquée');
+        }
+        if (type === 'ferie' || cl.includes('jf') || cl.includes('férié') || cl.includes('ferie') || tit.includes('férié') || tit.includes('fête')) {
+          return '🟠 Jour férié : ' + (s.classe !== 'others' ? s.classe : 'JF');
+        }
+        return '🔵 Événement : ' + (s.classe !== 'others' ? s.classe : 'Autre');
+      },
       formatDate(d) {
         if (!d) return '';
         const dt = new Date(d);
         return dt.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      },
+      decodeHtml(str) {
+        return typeof decodeHtmlEntities === 'function' ? decodeHtmlEntities(str) : (str || '');
       },
       changeYear() {
         window.location.href = 'calendrier.html?year=' + encodeURIComponent(this.selectedYear);

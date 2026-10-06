@@ -82,6 +82,10 @@ class Seances
         return $this->_data;
     }
 
+    public function setData(array $data) {
+        $this->_data = $data;
+    }
+
     public function getClasse() {
         return $this->_classe;
     }

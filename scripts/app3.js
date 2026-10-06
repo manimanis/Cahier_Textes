@@ -102,9 +102,39 @@ function startApp() {
       filterGroupe: '',
       sortOrder: 'desc',
 
-      // Calendrier
+      // Calendrier & Événements (Fériés, Vacances, Semaine bloquée)
       months: [],
-      activeDay: null
+      activeDay: null,
+      newEvent: {
+        type: 'ferie',
+        titre: '',
+        tag: 'JF',
+        date: '',
+        date_fin: '',
+        remarque: '',
+        isRange: false
+      },
+      savingEvent: false,
+      yearEventsList: [],
+      quickHolidays: [
+        { label: "15 oct. : Évacuation", titre: "Fête de l'Évacuation", tag: "JF", month: "10", day: "15" },
+        { label: "17 déc. : Révolution", titre: "Fête de la Révolution", tag: "JF", month: "12", day: "17" },
+        { label: "1er janv. : Jour de l'An", titre: "Jour de l'An", tag: "JF", month: "01", day: "01" },
+        { label: "20 mars : Indépendance", titre: "Fête de l'Indépendance", tag: "JF", month: "03", day: "20" },
+        { label: "9 avr. : Martyrs", titre: "Fête des Martyrs", tag: "JF", month: "04", day: "09" },
+        { label: "1er mai : Travail", titre: "Fête du Travail", tag: "JF", month: "05", day: "01" },
+        { label: "Mouled", titre: "Mouled (Naissance du Prophète)", tag: "JF" },
+        { label: "Aïd El-Fitr", titre: "Aïd El-Fitr", tag: "JF" },
+        { label: "Aïd El-Idha", titre: "Aïd El-Idha", tag: "JF" }
+      ],
+      quickVacations: [
+        { label: "Mi-Trimestre 1", titre: "Vacances de la mi-trimestre 1", tag: "Vacances" },
+        { label: "Hiver", titre: "Vacances d'hiver", tag: "Vacances" },
+        { label: "Mi-Trimestre 2", titre: "Vacances de la mi-trimestre 2", tag: "Vacances" },
+        { label: "Printemps", titre: "Vacances de printemps", tag: "Vacances" },
+        { label: "Sem. Bloquée T1", titre: "Semaine bloquée - Trimestre 1", tag: "Bloquée", type: "bloquee" },
+        { label: "Sem. Bloquée T2", titre: "Semaine bloquée - Trimestre 2", tag: "Bloquée", type: "bloquee" }
+      ]
     },
     computed: {
       // === EMPLOI DU TEMPS COMPUTED ===
@@ -212,6 +242,68 @@ function startApp() {
           pairs.push(p);
         }
         return pairs;
+      },
+      eventTitlePlaceholder() {
+        if (this.newEvent.type === 'ferie') return "ex: Fête de l'Évacuation";
+        if (this.newEvent.type === 'vacances') return "ex: Vacances d'hiver";
+        if (this.newEvent.type === 'bloquee') return "ex: Semaine bloquée - Trimestre 1";
+        return "ex: Réunion pédagogique, Conseil de classe...";
+      },
+      eventDaysCount() {
+        if (!this.newEvent.date || !this.newEvent.date_fin) return 1;
+        const d1 = new Date(this.newEvent.date + 'T00:00:00');
+        const d2 = new Date(this.newEvent.date_fin + 'T00:00:00');
+        const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24)) + 1;
+        return diff > 0 ? diff : 1;
+      },
+      groupedEventsList() {
+        if (!this.yearEventsList || this.yearEventsList.length === 0) return [];
+        const sorted = [...this.yearEventsList].sort((a, b) => a.date.localeCompare(b.date));
+        const groups = [];
+
+        sorted.forEach(ev => {
+          const last = groups[groups.length - 1];
+          let canMerge = false;
+
+          if (last) {
+            // Même période identifiée explicitement par periodId
+            if (last.periodId && ev.periodId && last.periodId === ev.periodId) {
+              canMerge = true;
+            } else if ((last.titre || '').trim().toLowerCase() === (ev.titre || '').trim().toLowerCase()
+                    && (last.classe || '').trim().toLowerCase() === (ev.classe || '').trim().toLowerCase()) {
+              // Même titre et étiquette : vérifier si la date est consécutive (lendemain)
+              const dLast = new Date(last.endDate + 'T00:00:00');
+              const dCurr = new Date(ev.date + 'T00:00:00');
+              const diffDays = Math.round((dCurr - dLast) / (1000 * 60 * 60 * 24));
+              if (diffDays === 1) {
+                canMerge = true;
+              }
+            }
+          }
+
+          if (canMerge) {
+            last.endDate = ev.date;
+            last.items.push(ev);
+            last.daysCount = last.items.length;
+            if (!last.remarque && ev.remarque) last.remarque = ev.remarque;
+          } else {
+            groups.push({
+              id: ev.periodId || ('grp_' + ev.date + '_' + Math.random().toString(36).substr(2, 5)),
+              periodId: ev.periodId || '',
+              titre: ev.titre || '',
+              classe: ev.classe || '',
+              type: ev.type || '',
+              remarque: ev.remarque || '',
+              startDate: ev.date,
+              endDate: ev.date,
+              daysCount: 1,
+              items: [ev],
+              expanded: false
+            });
+          }
+        });
+
+        return groups;
       }
     },
     mounted: function () {
@@ -261,6 +353,11 @@ function startApp() {
       this.buildCalendar(annee);
     },
     methods: {
+      // === DÉCODAGE SYMBOLES SPÉCIAUX / ENTITÉS HTML ===
+      decodeHtml: function (str) {
+        return typeof decodeHtmlEntities === 'function' ? decodeHtmlEntities(str) : (str || '');
+      },
+
       // === NAVIGATION ONGLETS ===
       switchTab: function (tab) {
         this.activeTab = tab;
@@ -520,9 +617,9 @@ function startApp() {
           if (month > 12) { month = 1; year++; }
         }
 
-        const allClasses = [...new Set([...classes, 'others'])];
+        const allClasses = [...new Set([...this.classesList, 'others'])];
         Promise.all(allClasses.map(c =>
-          loadSeancesData(this.annee_scolaire, c).then(seances => {
+          this.loadClasse(c).then(seances => {
             if (!seances) return;
             seances.forEach(s => {
               const dt = new Date(s.date + 'T00:00:00');
@@ -533,9 +630,9 @@ function startApp() {
                   const dayObj = this.months[mi].days[di];
                   if (!dayObj.seances) dayObj.seances = [];
                   dayObj.seances.push(s);
-                  const isSpecial = s.classe === 'others' || s.classe.includes('JF') || s.classe.includes('Réu');
-                  const tagCls = isSpecial ? 'cal-tag bg-warning text-dark' : 'cal-tag';
-                  dayObj.obs += `<span class="${tagCls}" title="${s.titre || s.classe}">${s.classe}</span> `;
+                  const tagCls = this.getEventTagClass(s);
+                  const tagText = (s.classe === 'others' ? (s.titre || 'Autre') : s.classe) || 'Événement';
+                  dayObj.obs += `<span class="${tagCls}" title="${decodeHtmlEntities(s.titre || s.classe)}">${tagText}</span> `;
                 }
               }
             });
@@ -570,15 +667,372 @@ function startApp() {
         const parts = [];
         if (dd === 0 || dd === 6) parts.push('cal-we');
         if (d.obs) parts.push('cal-jt');
+        if (d.seances && d.seances.length > 0) {
+          const hasVac = d.seances.some(s => this.isEventSession(s) && this.getEventTagClass(s).includes('cal-tag-vacances'));
+          const hasBlo = d.seances.some(s => this.isEventSession(s) && this.getEventTagClass(s).includes('cal-tag-bloquee'));
+          const hasFer = d.seances.some(s => this.isEventSession(s) && this.getEventTagClass(s).includes('cal-tag-ferie'));
+          if (hasVac) parts.push('cal-cell-vacances');
+          else if (hasBlo) parts.push('cal-cell-bloquee');
+          else if (hasFer) parts.push('cal-cell-ferie');
+        }
         return parts.length ? parts.join(' ') : '';
       },
       onDayClicked(day) {
-        if (day && day.seances && day.seances.length > 0) {
+        if (!day) return;
+        if ((day.seances && day.seances.length > 0) || this.connected) {
           this.activeDay = day;
           if (typeof $ !== 'undefined') {
             $('#modalDayDetailsIndex').modal('show');
           }
         }
+      },
+
+      // === ÉVÉNEMENTS & CONGÉS (Jours fériés, Vacances, Semaine bloquée) ===
+      isEventSession(s) {
+        if (!s) return false;
+        if (s.type) return true;
+        const clsList = this.classesList || [];
+        if (s.classe === 'others') return true;
+        return !clsList.includes(s.classe);
+      },
+      getEventTagClass(s) {
+        if (!this.isEventSession(s)) {
+          return 'cal-tag';
+        }
+        const type = (s.type || '').toLowerCase();
+        const cl = (s.classe || '').toLowerCase();
+        const tit = (s.titre || '').toLowerCase();
+
+        // 1. Vacances scolaires (priorité absolue pour éviter toute collision sur des mots comme "vacances")
+        if (type === 'vacances' || cl.includes('vac') || tit.includes('vacances')) {
+          return 'cal-tag cal-tag-vacances';
+        }
+        // 2. Semaine bloquée / Examens
+        if (type === 'bloquee' || cl.includes('bloqu') || cl.includes('exam') || tit.includes('bloqu') || tit.includes('examen')) {
+          return 'cal-tag cal-tag-bloquee';
+        }
+        // 3. Jours fériés
+        if (type === 'ferie' || cl.includes('jf') || cl.includes('férié') || cl.includes('ferie') ||
+            tit.includes('férié') || tit.includes('ferie') || tit.includes('fête') || tit.includes('fete') ||
+            tit.includes("jour de l'an") || tit.includes('nouvel an') || tit.includes('évacuation') ||
+            tit.includes('révolution') || tit.includes('revolution') || tit.includes('indépendance') ||
+            tit.includes('independance') || tit.includes('martyrs') || tit.includes('travail') ||
+            tit.includes('mouled') || tit.includes('aïd') || tit.includes('aid')) {
+          return 'cal-tag cal-tag-ferie';
+        }
+        return 'cal-tag cal-tag-autre';
+      },
+      getEventBadgeClass(s) {
+        const tagCls = this.getEventTagClass(s);
+        if (tagCls.includes('cal-tag-vacances')) return 'badge-vacances';
+        if (tagCls.includes('cal-tag-bloquee')) return 'badge-bloquee';
+        if (tagCls.includes('cal-tag-ferie')) return 'badge-ferie';
+        return 'badge-autre';
+      },
+      getEventLabel(s) {
+        const type = (s.type || '').toLowerCase();
+        const cl = (s.classe || '').toLowerCase();
+        const tit = (s.titre || '').toLowerCase();
+        if (type === 'vacances' || cl.includes('vac') || tit.includes('vacances')) {
+          return '🟢 Vacances : ' + (s.classe !== 'others' ? s.classe : 'Vacances');
+        }
+        if (type === 'bloquee' || cl.includes('bloqu') || tit.includes('bloqu')) {
+          return '🟣 Semaine bloquée : ' + (s.classe !== 'others' ? s.classe : 'Bloquée');
+        }
+        if (type === 'ferie' || cl.includes('jf') || cl.includes('férié') || cl.includes('ferie') || tit.includes('férié') || tit.includes('fête')) {
+          return '🟠 Jour férié : ' + (s.classe !== 'others' ? s.classe : 'JF');
+        }
+        return '🔵 Événement : ' + (s.classe !== 'others' ? s.classe : 'Autre');
+      },
+      setEventType(type) {
+        this.newEvent.type = type;
+        if (type === 'ferie') {
+          this.newEvent.tag = 'JF';
+          this.newEvent.isRange = false;
+        } else if (type === 'vacances') {
+          this.newEvent.tag = 'Vacances';
+          this.newEvent.isRange = true;
+          if (this.newEvent.date && !this.newEvent.date_fin) {
+            const dt = new Date(this.newEvent.date + 'T00:00:00');
+            dt.setDate(dt.getDate() + 6);
+            this.newEvent.date_fin = dt.toISOString().substring(0, 10);
+          }
+        } else if (type === 'bloquee') {
+          this.newEvent.tag = 'Bloquée';
+          this.newEvent.isRange = true;
+          if (this.newEvent.date && !this.newEvent.date_fin) {
+            const dt = new Date(this.newEvent.date + 'T00:00:00');
+            dt.setDate(dt.getDate() + 5);
+            this.newEvent.date_fin = dt.toISOString().substring(0, 10);
+          }
+        } else {
+          this.newEvent.tag = 'Autre';
+          this.newEvent.isRange = false;
+        }
+      },
+      applyQuickHoliday(q) {
+        this.newEvent.titre = q.titre;
+        this.newEvent.tag = q.tag || 'JF';
+        if (q.month && q.day) {
+          const yrStart = +this.annee_scolaire.substring(0, 4);
+          const yrEnd = +this.annee_scolaire.substring(5, 9) || (yrStart + 1);
+          const yr = (+q.month >= 8) ? yrStart : yrEnd;
+          this.newEvent.date = `${yr}-${q.month}-${q.day}`;
+        }
+      },
+      applyQuickVacation(qv) {
+        if (qv.type) this.setEventType(qv.type);
+        this.newEvent.titre = qv.titre;
+        this.newEvent.tag = qv.tag || 'Vacances';
+      },
+      onEventDateStartChange() {
+        if (this.newEvent.isRange) {
+          if (!this.newEvent.date_fin || this.newEvent.date_fin < this.newEvent.date) {
+            const dt = new Date(this.newEvent.date + 'T00:00:00');
+            dt.setDate(dt.getDate() + (this.newEvent.type === 'vacances' ? 6 : 5));
+            this.newEvent.date_fin = dt.toISOString().substring(0, 10);
+          }
+        }
+      },
+      openAddEventModal() {
+        if (!this.connected) {
+          this.showLoginForm = true;
+          return;
+        }
+        const today = new Date().toISOString().substring(0, 10);
+        this.newEvent = {
+          type: 'ferie',
+          titre: '',
+          tag: 'JF',
+          date: this.newEvent && this.newEvent.date ? this.newEvent.date : today,
+          date_fin: '',
+          remarque: '',
+          isRange: false
+        };
+        if (typeof $ !== 'undefined') {
+          $('#modalManageEvents').modal('hide');
+          $('#modalDayDetailsIndex').modal('hide');
+          $('#modalAddEvent').modal('show');
+        }
+      },
+      openAddEventModalForDate(dateStr) {
+        if (!this.connected) {
+          this.showLoginForm = true;
+          return;
+        }
+        let d = dateStr;
+        if (dateStr instanceof Date) {
+          d = dateStr.toISOString().substring(0, 10);
+        }
+        this.newEvent = {
+          type: 'ferie',
+          titre: '',
+          tag: 'JF',
+          date: d,
+          date_fin: '',
+          remarque: '',
+          isRange: false
+        };
+        if (typeof $ !== 'undefined') {
+          $('#modalDayDetailsIndex').modal('hide');
+          $('#modalAddEvent').modal('show');
+        }
+      },
+      openManageEventsModal() {
+        if (!this.connected) {
+          this.showLoginForm = true;
+          return;
+        }
+        this.loadYearEventsList().then(() => {
+          if (typeof $ !== 'undefined') {
+            $('#modalAddEvent').modal('hide');
+            $('#modalManageEvents').modal('show');
+          }
+        });
+      },
+      loadYearEventsList() {
+        return loadSeancesData(this.annee_scolaire, 'others').then(evts => {
+          this.yearEventsList = evts || [];
+          return this.yearEventsList;
+        });
+      },
+      submitAddEvent() {
+        if (!this.newEvent.date) {
+          showToast('error', 'Veuillez sélectionner une date');
+          return;
+        }
+        if (!this.newEvent.titre) {
+          showToast('error', 'Veuillez saisir un intitulé');
+          return;
+        }
+        this.savingEvent = true;
+
+        const formData = new URLSearchParams();
+        formData.append('year', this.annee_scolaire);
+        formData.append('type', this.newEvent.type);
+        formData.append('titre', this.newEvent.titre);
+        formData.append('tag', this.newEvent.tag);
+        formData.append('date', this.newEvent.date);
+        if (this.newEvent.isRange && this.newEvent.date_fin) {
+          formData.append('date_fin', this.newEvent.date_fin);
+        } else {
+          formData.append('date_fin', this.newEvent.date);
+        }
+        formData.append('remarque', this.newEvent.remarque || '');
+
+        const headers = {};
+        if (this.authToken) headers['Authorization'] = 'Bearer ' + this.authToken;
+
+        fetch('operations.php?act=addevent', {
+          method: 'POST',
+          body: formData,
+          headers: headers
+        })
+          .then(res => res.json())
+          .then(data => {
+            this.savingEvent = false;
+            if (data && data.status === 'ok') {
+              showToast('success', 'Événement enregistré avec succès');
+              if (typeof $ !== 'undefined') {
+                $('#modalAddEvent').modal('hide');
+              }
+              const annee = +this.annee_scolaire.substring(0, 4);
+              this.buildCalendar(annee);
+            } else {
+              const err = (data && data.errors && data.errors.join(', ')) || 'Erreur lors de l\'enregistrement';
+              showToast('error', err);
+            }
+          })
+          .catch(() => {
+            this.savingEvent = false;
+            showToast('error', 'Erreur de connexion');
+          });
+      },
+      formatDateRange(startDate, endDate) {
+        if (!startDate) return '';
+        if (!endDate || startDate === endDate) {
+          return this.formatDate(startDate);
+        }
+        const d1 = new Date(startDate + 'T00:00:00');
+        const d2 = new Date(endDate + 'T00:00:00');
+        const optDayMonth = { weekday: 'short', day: 'numeric', month: 'short' };
+        const optFull = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+
+        if (d1.getFullYear() === d2.getFullYear()) {
+          const s1 = d1.toLocaleDateString('fr-FR', optDayMonth);
+          const s2 = d2.toLocaleDateString('fr-FR', optFull);
+          return `Du ${s1} au ${s2}`;
+        }
+        const s1 = d1.toLocaleDateString('fr-FR', optFull);
+        const s2 = d2.toLocaleDateString('fr-FR', optFull);
+        return `Du ${s1} au ${s2}`;
+      },
+      getEventGroup(s) {
+        if (!s || !this.isEventSession(s)) return null;
+        return this.groupedEventsList.find(g =>
+          (g.periodId && s.periodId && g.periodId === s.periodId) ||
+          (g.startDate <= s.date && g.endDate >= s.date && (g.titre === s.titre || g.classe === s.classe))
+        ) || null;
+      },
+      onDeleteEventClicked(evt) {
+        if (!this.connected) return;
+        const grp = this.getEventGroup(evt);
+        if (grp && grp.daysCount > 1) {
+          const dateDesc = this.formatDateRange(grp.startDate, grp.endDate);
+          const choice = confirm(`Cet événement fait partie du bloc "${grp.titre || grp.classe}" (${dateDesc} - ${grp.daysCount} jours).\n\nCliquez sur OK pour supprimer TOUT le bloc (${grp.daysCount} jours),\nou sur Annuler pour supprimer uniquement ce jour.`);
+          if (choice) {
+            this.deleteGroupedEvent(grp);
+            return;
+          }
+        } else {
+          if (!confirm(`Supprimer l'événement "${evt.titre || evt.classe}" du ${this.formatDate(evt.date)} ?`)) return;
+        }
+
+        this.deleteEventApi(evt, false);
+      },
+      deleteEventFromList(evt) {
+        if (!confirm(`Supprimer l'événement "${evt.titre || evt.classe}" du ${this.formatDate(evt.date)} ?`)) return;
+        this.deleteEventApi(evt, false);
+      },
+      deleteGroupedEvent(group) {
+        if (!this.connected) return;
+        const count = group.daysCount || 1;
+        const dateDesc = this.formatDateRange(group.startDate, group.endDate);
+        const promptMsg = count > 1
+          ? `Supprimer toute la période "${group.titre || group.classe}" ?\n\n${dateDesc} (${count} jours)\nCette action supprimera l'ensemble des jours de ce bloc.`
+          : `Supprimer l'événement "${group.titre || group.classe}" du ${this.formatDate(group.startDate)} ?`;
+
+        if (!confirm(promptMsg)) return;
+
+        const formData = new URLSearchParams();
+        formData.append('year', this.annee_scolaire);
+        formData.append('date', group.startDate);
+        formData.append('date_fin', group.endDate);
+        if (group.titre) formData.append('titre', group.titre);
+        if (group.classe) formData.append('tag', group.classe);
+        if (group.periodId) formData.append('periodId', group.periodId);
+        formData.append('deletePeriod', 'true');
+
+        const headers = {};
+        if (this.authToken) headers['Authorization'] = 'Bearer ' + this.authToken;
+
+        fetch('operations.php?act=deleteevent', {
+          method: 'POST',
+          body: formData,
+          headers: headers
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.status === 'ok') {
+              showToast('success', count > 1 ? `Bloc supprimé (${count} jours)` : 'Événement supprimé');
+              if (typeof $ !== 'undefined') {
+                $('#modalDayDetailsIndex').modal('hide');
+              }
+              const annee = +this.annee_scolaire.substring(0, 4);
+              this.buildCalendar(annee);
+              this.loadYearEventsList();
+            } else {
+              showToast('error', 'Erreur lors de la suppression');
+            }
+          })
+          .catch(() => {
+            showToast('error', 'Erreur de connexion');
+          });
+      },
+      deleteEventApi(evt, deletePeriod) {
+        const formData = new URLSearchParams();
+        formData.append('year', this.annee_scolaire);
+        formData.append('date', evt.date);
+        if (evt.titre) formData.append('titre', evt.titre);
+        if (evt.classe) formData.append('tag', evt.classe);
+        if (evt.periodId) formData.append('periodId', evt.periodId);
+        if (deletePeriod) formData.append('deletePeriod', 'true');
+
+        const headers = {};
+        if (this.authToken) headers['Authorization'] = 'Bearer ' + this.authToken;
+
+        fetch('operations.php?act=deleteevent', {
+          method: 'POST',
+          body: formData,
+          headers: headers
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.status === 'ok') {
+              showToast('success', 'Événement supprimé');
+              if (typeof $ !== 'undefined') {
+                $('#modalDayDetailsIndex').modal('hide');
+              }
+              const annee = +this.annee_scolaire.substring(0, 4);
+              this.buildCalendar(annee);
+              this.loadYearEventsList();
+            } else {
+              showToast('error', 'Erreur lors de la suppression');
+            }
+          })
+          .catch(() => {
+            showToast('error', 'Erreur de connexion');
+          });
       },
 
       // === ÉDITION DE SÉANCES (En local avec PHP) ===

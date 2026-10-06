@@ -59,16 +59,35 @@ const emploi = [
   },
 ];
 
+function decodeHtmlEntities(str) {
+  if (!str || typeof str !== 'string') return str || '';
+  if (!str.includes('&')) return str;
+  try {
+    if (typeof document !== 'undefined') {
+      const txt = document.createElement('textarea');
+      txt.innerHTML = str;
+      return txt.value;
+    }
+  } catch (e) {}
+  return str.replace(/&(?:apos|#39|#039);/gi, "'")
+            .replace(/&quot;/gi, '"')
+            .replace(/&lt;/gi, '<')
+            .replace(/&gt;/gi, '>')
+            .replace(/&amp;/gi, '&');
+}
+
 class Seance {
   constructor(obj = {}) {
-    this.titre = obj.titre || '';
+    this.titre = decodeHtmlEntities(obj.titre || '');
     this.classe = obj.classe || '';
     this.date = obj.date || '';
     this.debut = obj.debut || '';
     this.fin = obj.fin || '';
     this.groupe = obj.groupe || '';
     this.travail = obj.travail || '';
-    this.remarque = obj.remarque || '';
+    this.remarque = decodeHtmlEntities(obj.remarque || '');
+    this.type = obj.type || '';
+    this.periodId = obj.periodId || '';
   }
 }
 

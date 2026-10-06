@@ -6,7 +6,7 @@ class IndexController extends ControllerBase
 {
   private function sanitizeHtml(string $value): string
   {
-    return htmlspecialchars(strip_tags($value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    return html_entity_decode(trim(strip_tags($value)), ENT_QUOTES | ENT_HTML5, 'UTF-8');
   }
 
   private function sanitizeHtmlPreserveTags(string $value): string
@@ -462,6 +462,217 @@ class IndexController extends ControllerBase
     $this->write();
   }
 
+  // === ÉVÉNEMENTS & CONGÉS (Jours fériés, Vacances, Semaine bloquée) ===
+
+  /**
+   * Récupère la liste des événements/congés ('others') pour une année
+   */
+  public function geteventsAction()
+  {
+    $req = $this->getRequest();
+    $year = $req['year'] ?? '';
+    if (!$year) {
+      $this->addError("Year parameter is required!");
+      $this->write();
+      die();
+    }
+
+    $seance = new Seances('others', $year);
+    $this->addData('events', $seance->getData());
+    $this->write();
+  }
+
+  /**
+   * Ajoute manuellement un jour férié, une période de vacances ou une semaine bloquée
+   */
+  public function addeventAction()
+  {
+    $this->requireAuth();
+    if (!$this->isPOST()) {
+      $this->addError("Only POST method is supported!");
+      $this->write();
+      die();
+    }
+
+    $req = $this->getRequest();
+    $year = $req['year'] ?? '';
+    if (!$year) {
+      $this->addError("Year parameter is required!");
+      $this->write();
+      die();
+    }
+
+    $type = $this->sanitizeHtml($req['type'] ?? 'ferie'); // ferie | vacances | bloquee | autre
+    $titre = $this->sanitizeHtml($req['titre'] ?? '');
+    $tag = $this->sanitizeHtml($req['tag'] ?? '');
+    $dateStart = $this->sanitizeHtml($req['date'] ?? '');
+    $dateEnd = $this->sanitizeHtml($req['date_fin'] ?? $dateStart);
+    $remarque = $this->sanitizeHtml($req['remarque'] ?? '');
+
+    if (!$dateStart) {
+      $this->addError("Date parameter is required!");
+      $this->write();
+      die();
+    }
+
+    if (!$titre) {
+      if ($type === 'ferie') $titre = 'Jour férié';
+      else if ($type === 'vacances') $titre = 'Vacances scolaires';
+      else if ($type === 'bloquee') $titre = 'Semaine bloquée';
+      else $titre = 'Événement';
+    }
+
+    if (!$tag) {
+      if ($type === 'ferie') $tag = 'JF';
+      else if ($type === 'vacances') $tag = 'Vacances';
+      else if ($type === 'bloquee') $tag = 'Bloquée';
+      else $tag = 'Autre';
+    }
+
+    if (!$dateEnd || strcmp($dateEnd, $dateStart) < 0) {
+      $dateEnd = $dateStart;
+    }
+
+    $periodId = uniqid('evt_' . substr($type, 0, 3) . '_');
+
+    $seance = new Seances('others', $year);
+    $data = $seance->getData();
+
+    $startDate = new DateTime($dateStart);
+    $endDate = new DateTime($dateEnd);
+    $interval = new DateInterval('P1D');
+    $dateRange = new DatePeriod($startDate, $interval, (clone $endDate)->modify('+1 day'));
+
+    $addedCount = 0;
+    foreach ($dateRange as $dt) {
+      $curDate = $dt->format('Y-m-d');
+
+      $exists = false;
+      foreach ($data as $idx => $item) {
+        if ($item['date'] === $curDate && (($item['titre'] ?? '') === $titre || ($item['classe'] ?? '') === $tag)) {
+          $data[$idx]['classe'] = $tag;
+          $data[$idx]['titre'] = $titre;
+          $data[$idx]['remarque'] = $remarque;
+          $data[$idx]['type'] = $type;
+          $data[$idx]['periodId'] = $periodId;
+          $exists = true;
+          $addedCount++;
+          break;
+        }
+      }
+
+      if (!$exists) {
+        $record = [
+          'classe' => $tag,
+          'date' => $curDate,
+          'debut' => '',
+          'fin' => '',
+          'groupe' => '',
+          'titre' => $titre,
+          'travail' => '',
+          'remarque' => $remarque,
+          'type' => $type,
+          'periodId' => $periodId
+        ];
+        $data[] = $record;
+        $addedCount++;
+      }
+    }
+
+    usort($data, function ($a, $b) {
+      return strcmp($a['date'], $b['date']);
+    });
+
+    $seance->setData($data);
+    $seance->save();
+
+    $this->addData('addedCount', $addedCount);
+    $this->addData('periodId', $periodId);
+    $this->addData('events', $data);
+    $this->write();
+  }
+
+  /**
+   * Supprime un jour férié, des vacances ou une semaine bloquée
+   */
+  public function deleteeventAction()
+  {
+    $this->requireAuth();
+    if (!$this->isPOST()) {
+      $this->addError("Only POST method is supported!");
+      $this->write();
+      die();
+    }
+
+    $req = $this->getRequest();
+    $year = $req['year'] ?? '';
+    $date = $req['date'] ?? '';
+    $dateFin = $req['date_fin'] ?? '';
+    $periodId = $req['periodId'] ?? '';
+    $titre = $req['titre'] ?? '';
+    $tag = $req['tag'] ?? '';
+    $deletePeriod = !empty($req['deletePeriod']) && ($req['deletePeriod'] === 'true' || $req['deletePeriod'] === true || $req['deletePeriod'] === '1');
+
+    if (!$year) {
+      $this->addError("Year parameter is required!");
+      $this->write();
+      die();
+    }
+
+    $seance = new Seances('others', $year);
+    $data = $seance->getData();
+
+    $deletedCount = 0;
+    for ($i = count($data) - 1; $i >= 0; $i--) {
+      $item = $data[$i];
+      $match = false;
+
+      if ($deletePeriod) {
+        if ($periodId && isset($item['periodId']) && $item['periodId'] === $periodId) {
+          $match = true;
+        } else if ($date && $dateFin && $item['date'] >= $date && $item['date'] <= $dateFin) {
+          if ($titre && ($item['titre'] ?? '') === $titre) {
+            $match = true;
+          } else if ($tag && ($item['classe'] ?? '') === $tag) {
+            $match = true;
+          } else if (!$titre && !$tag) {
+            $match = true;
+          }
+        } else if ($item['date'] === $date) {
+          if ($titre && ($item['titre'] ?? '') === $titre) {
+            $match = true;
+          } else if ($tag && ($item['classe'] ?? '') === $tag) {
+            $match = true;
+          }
+        }
+      } else {
+        if ($periodId && isset($item['periodId']) && $item['periodId'] === $periodId && $item['date'] === $date) {
+          $match = true;
+        } else if ($item['date'] === $date) {
+          if ($titre && ($item['titre'] ?? '') === $titre) {
+            $match = true;
+          } else if ($tag && ($item['classe'] ?? '') === $tag) {
+            $match = true;
+          } else if (!$titre && !$tag && !$periodId) {
+            $match = true;
+          }
+        }
+      }
+
+      if ($match) {
+        array_splice($data, $i, 1);
+        $deletedCount++;
+      }
+    }
+
+    $seance->setData($data);
+    $seance->save();
+
+    $this->addData('deletedCount', $deletedCount);
+    $this->addData('events', $data);
+    $this->write();
+  }
+
   // === AUTH ===
 
   public function loginAction()
@@ -582,7 +793,7 @@ class IndexController extends ControllerBase
     } else {
       foreach ($seances as $s) {
         $dateFormatted = date('d/m/Y', strtotime($s['date']));
-        $titre = htmlspecialchars($s['titre'] ?? '');
+        $titre = htmlspecialchars(html_entity_decode($s['titre'] ?? '', ENT_QUOTES | ENT_HTML5, 'UTF-8'), ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $debut = htmlspecialchars($s['debut'] ?? '');
         $fin = htmlspecialchars($s['fin'] ?? '');
         $groupe = htmlspecialchars($s['groupe'] ?? '');
@@ -651,9 +862,9 @@ class IndexController extends ControllerBase
         $s['debut'] ?? '',
         $s['fin'] ?? '',
         $s['groupe'] ?? '',
-        $s['titre'] ?? '',
+        html_entity_decode(strip_tags($s['titre'] ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8'),
         strip_tags($s['travail'] ?? ''),
-        $s['remarque'] ?? ''
+        html_entity_decode(strip_tags($s['remarque'] ?? ''), ENT_QUOTES | ENT_HTML5, 'UTF-8')
       ], ';');
     }
 

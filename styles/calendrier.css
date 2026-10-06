@@ -121,6 +121,82 @@
   white-space: nowrap;
 }
 
+/* --- Event Tags (Férié, Vacances, Semaine Bloquée, Autre) --- */
+.cal-tag-ferie {
+  background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+  color: #fff !important;
+  box-shadow: 0 1px 2px rgba(245, 158, 11, 0.35);
+}
+
+.cal-tag-vacances {
+  background: linear-gradient(135deg, #10b981, #059669) !important;
+  color: #fff !important;
+  box-shadow: 0 1px 2px rgba(16, 185, 129, 0.35);
+}
+
+.cal-tag-bloquee {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+  color: #fff !important;
+  box-shadow: 0 1px 2px rgba(139, 92, 246, 0.35);
+}
+
+.cal-tag-autre {
+  background: linear-gradient(135deg, #0ea5e9, #0284c7) !important;
+  color: #fff !important;
+  box-shadow: 0 1px 2px rgba(14, 165, 233, 0.35);
+}
+
+/* --- Consecutive Event Day Cell Backgrounds --- */
+.cal-cell-vacances {
+  background: rgba(16, 185, 129, 0.08) !important;
+}
+.cal-cell-bloquee {
+  background: rgba(139, 92, 246, 0.08) !important;
+}
+.cal-cell-ferie {
+  background: rgba(245, 158, 11, 0.08) !important;
+}
+
+.btn-purple {
+  background-color: #8b5cf6 !important;
+  border-color: #8b5cf6 !important;
+  color: #fff !important;
+}
+.btn-purple:hover {
+  background-color: #7c3aed !important;
+  border-color: #7c3aed !important;
+}
+
+.btn-outline-purple {
+  color: #8b5cf6 !important;
+  border-color: #8b5cf6 !important;
+  background-color: transparent !important;
+}
+.btn-outline-purple:hover {
+  background-color: #8b5cf6 !important;
+  color: #fff !important;
+}
+
+.badge-ferie {
+  background-color: #f59e0b !important;
+  color: #fff !important;
+}
+
+.badge-vacances {
+  background-color: #10b981 !important;
+  color: #fff !important;
+}
+
+.badge-bloquee {
+  background-color: #8b5cf6 !important;
+  color: #fff !important;
+}
+
+.badge-autre {
+  background-color: #0ea5e9 !important;
+  color: #fff !important;
+}
+
 /* --- Responsive --- */
 @media (max-width: 768px) {
   .cal-header h1 { font-size: 1.6rem; }
